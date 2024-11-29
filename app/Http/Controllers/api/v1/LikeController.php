@@ -19,17 +19,21 @@ class LikeController extends Controller
             ->where('user_id', $userId)
             ->first();
 
+        $product = Product::query()->where('id', $product->id)->first();
+
         if ($existingLike) {
             $existingLike->delete();
 
-            return $this->success(null, 'Success', 'Product unliked successfully');
+            return $this->success($product, 'Success', 'Product unliked successfully');
         }
 
-        LikeProducts::create([
+        $like = LikeProducts::create([
             'product_id' => $product->id,
             'user_id' => $userId,
         ]);
 
-        return $this->success(null, 'Success', 'Product liked successfully');
+        //query product to get the updated likes count
+
+        return $this->success($product, 'Success', 'Product liked successfully');
     }
 }

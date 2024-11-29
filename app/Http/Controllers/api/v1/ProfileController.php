@@ -17,6 +17,8 @@ class ProfileController extends Controller
     public function index(): JsonResponse
     {
         return $this->success([
+            'email' => auth()->user()->email,
+            'mobile' => auth()->user()->mobile,
             'name' => auth()->user()->name,
             'profile_url' => secure_asset('storage/'.auth()->user()->profile_photo_path) ?? config('image.avatar_url'),
             'age' => auth()->user()->age ?? 0,
@@ -28,8 +30,9 @@ class ProfileController extends Controller
         $user = auth()->user();
         $user->name = $request->name;
         $user->age = $request->age;
+        $user->mobile = $request->mobile;
         if ($request->hasFile('image')) {
-            $user->profile_photo_path = $request->file('image') ? storeUploadedFile($request->file('image'), 'upload') : '';
+            $user->image = $request->file('image') ? storeUploadedFile($request->file('image'), 'upload') : '';
         }
         $user->save();
 
@@ -41,6 +44,7 @@ class ProfileController extends Controller
 
         return $this->success([
             'name' => $user->name,
+            'mobile' => $user->mobile,
             'profile_url' => asset('storage/'.$user->profile_photo_path) ?? config('image.avatar_url'),
             'age' => $user->age,
         ]);

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('product_vendor_id');
             $table->string('name');
-            $table->string('slug')->unique();
+            $table->string('slug');
             $table->string('address')->nullable();
             $table->string('description')->nullable();
             $table->string('logo')->nullable();

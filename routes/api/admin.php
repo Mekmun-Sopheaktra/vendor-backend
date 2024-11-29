@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('admin/login', [AdminAuthController::class, 'Login'])->middleware('api.admin')->name('api.admin.login');
 Route::post('admin/register', [AdminAuthController::class, 'Register'])->name('api.admin.register');
 
-Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
+Route::prefix('admin')->middleware(['auth:sanctum', 'api.admin'])->group(function () {
     Route::get('profile', [ProfileController::class, 'index'])->name('api.admin.profile');
     Route::post('profile', [ProfileController::class, 'update'])->name('api.admin.update.profile');
     Route::get('home', [HomeController::class, 'index'])->name('api.admin.home');
@@ -25,19 +25,32 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
         Route::get('', [HomeController::class, 'search'])->name('api.admin.search.data');
     });
 
+    //index
+    Route::get('product', [ProductController::class, 'index'])->name('api.admin.product');
+    //show
+    Route::get('product/{product}', [ProductController::class, 'show'])->name('api.admin.product.show');
+    //store
+    Route::post('product/create', [ProductController::class, 'store'])->name('api.admin.product.store');
     Route::get('product/wishlist', [ProductController::class, 'wishlist'])->name('api.admin.product.wishlist');
-    Route::resource('product', ProductController::class)
-        ->except(['store', 'update', 'destroy', 'edit'])
-        ->names([
-            'index' => 'product.admin.index',
-            'show' => 'product.admin.show',
-            'create' => 'product.admin.create'
-        ]);
+
     Route::get('product/{product}/like', [LikeController::class, 'likeProduct'])->name('api.admin.product.like');
 
     //compound
     Route::get('compound', [CompoundController::class, 'index'])->name('api.admin.compound');
     Route::post('compound', [CompoundController::class, 'store'])->name('api.admin.compound.store');
+    //show
+    Route::get('compound/{compound}', [CompoundController::class, 'show'])->name('api.admin.compound.show');
+    //update
+    Route::post('compound/{compound}', [CompoundController::class, 'update'])->name('api.admin.compound.update');
+    //delete
+    Route::delete('compound/{compound}', [CompoundController::class, 'destroy'])->name('api.admin.compound.delete');
+    //add product to compound
+    Route::post('compound/{compound}/add', [CompoundController::class, 'addProduct'])->name('api.admin.compound.add');
+    //remove product from compound
+    Route::post('compound/{compound}/remove', [CompoundController::class, 'removeProduct'])->name('api.admin.compound.remove');
+    //update product in compound
+    Route::post('compound/{compound}/update', [CompoundController::class, 'updateProduct'])->name('api.admin.compound.update.product');
+    //show product in compound
 
 
     Route::get('comment/{product}', [CommentController::class, 'index'])->name('api.admin.comment');

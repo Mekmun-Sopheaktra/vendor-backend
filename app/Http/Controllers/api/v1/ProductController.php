@@ -9,6 +9,7 @@ use App\Http\Resources\Product\wishListCollection;
 use App\Models\Category;
 use App\Models\LikeProducts;
 use App\Models\Product;
+use App\Models\Tag;
 use App\Traits\BaseApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ class ProductController extends Controller
     public function index(Request $request): JsonResponse
     {
         $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
-        $products = Product::paginate($perPage);
+        $products = Product::with(['categories', 'tags', 'galleries'])->paginate($perPage);
 
         return $this->success($products);
     }
@@ -40,13 +41,121 @@ class ProductController extends Controller
         return $this->success($product);
     }
 
+    public function create()
+    {
+        return response()->json([
+            'message' => 'Display product creation form.',
+            'categories' => Category::all(),
+            'tags' => Tag::all(),
+        ]);
+    }
+    public function edit(Product $product)
+    {
+        $product->load(['categories', 'tags']);
+        return response()->json([
+            'product' => $product,
+            'categories' => Category::all(),
+            'tags' => Tag::all(),
+        ]);
+    }
+    //store
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'user_id' => 'required|integer',
+            'brand_id' => 'required',
+            'title' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:products,slug',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric',
+            'image' => 'nullable|string', // Validate image type and size
+            'volume' => 'nullable|string',
+            'product_code' => 'nullable|string',
+            'manufacturing_date' => 'nullable|date',
+            'fragrance_family' => 'nullable|string',
+            'expire_date' => 'nullable|date',
+            'gender' => 'nullable|string',
+            'inventory' => 'nullable|integer',
+            'view_count' => 'nullable|integer',
+            'discount' => 'nullable|numeric',
+            'priority' => 'nullable',
+        ]);
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            // Generate a unique filename and store the image
+            $imagePath = $request->file('image')->store('uploads/products', 'public');
+            $validatedData['image'] = $imagePath;
+        }
+
+        logger($validatedData);
+
+        // Create the product with the validated data
+        $product = Product::create($validatedData);
+
+        // Attach relationships if necessary
+        if ($request->has('categories')) {
+            $product->categories()->attach($request->categories);
+        }
+
+        if ($request->has('tags')) {
+            $product->tags()->attach($request->tags);
+        }
+
+        return $this->success($product, 'Product created successfully');
+    }
+
+    public function update(Request $request, Product $product)
+    {
+        $validatedData = $request->validate([
+            'title' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:products,slug,' . $product->id,
+            'description' => 'nullable|string',
+            'price' => 'required|numeric',
+            'image' => 'nullable|string',
+            'volume' => 'nullable|string',
+            'product_code' => 'nullable|string',
+            'manufacturing_date' => 'nullable|date',
+            'fragrance_family' => 'nullable|string',
+            'expire_date' => 'nullable|date',
+            'gender' => 'nullable|string',
+            'inventory' => 'nullable|integer',
+            'view_count' => 'nullable|integer',
+            'is_compound_product' => 'nullable|boolean',
+            'discount' => 'nullable|numeric',
+            'priority' => 'nullable|integer',
+        ]);
+
+        $product->update($validatedData);
+
+        // Update relationships if necessary
+        if ($request->has('categories')) {
+            $product->categories()->sync($request->categories);
+        }
+
+        if ($request->has('tags')) {
+            $product->tags()->sync($request->tags);
+        }
+
+        return $this->success($product, 'Product updated successfully');
+    }
+
+    public function destroy(Product $product)
+    {
+        $product->delete();
+
+        return response()->json([
+            'message' => 'Product deleted successfully.',
+        ]);
+    }
+
     public function wishlist(Request $request): JsonResponse
     {
         $productsQuery = auth()->user()->likedProducts()->with('product');
 
         if ($request->has('category_id')) {
             $productsQuery->whereHas('product', function ($query) use ($request) {
-                $query->where('category_id', $request->input('category_id'));
+                $query->where('id', $request->input('category_id'));
             });
         }
 
@@ -59,10 +168,7 @@ class ProductController extends Controller
 
         $products = $productsQuery->paginate($perPage);
 
-        $categories = Category::query()->select('id', 'name', 'parent', 'icon')->get();
-
         $data = [
-            'categories' => $categories,
             'products' => new wishListCollection($products),
             'pagination' => [
                 'page_number' => $products->currentPage(),
@@ -145,11 +251,11 @@ class ProductController extends Controller
         $minPrice = $request->query('min-price');
         $maxPrice = $request->query('max-price');
         $volume = $request->query('volume');
-        $popular = $request->query('popular');
+        $popular = $request->query('popular', 'desc'); // Default to descending order
         $perPage = $request->query('per_page', 10); // Default to 10 items per page
 
         // Initialize query
-        $query = Product::query();
+        $query = Product::query()->orderBy('priority', 'desc');
 
         // Filter by min and max price
         if ($minPrice) {

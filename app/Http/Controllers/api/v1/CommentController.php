@@ -21,12 +21,21 @@ class CommentController extends Controller
 
     public function store(StoreComment $request): JsonResponse
     {
-        auth()->user()->comments()->create($request->validated());
-        return $this->success(null, 'Comment', 'It is registered successfully');
+        $result = auth()->user()->comments()->create($request->validated());
+        return $this->success($result, 'Comment', 'It is registered successfully');
     }
 
-    private function getComments(Product $product): Collection
+    public function getComments(Product $product): Collection
     {
-        return $product->comments()->select('id', 'comment', 'created_at', 'rate', 'user_id')->with('user:id,name,profile_photo_path')->get();
+        return $product->comments()
+            ->select('id', 'comment', 'created_at', 'rate', 'user_id', 'parent_id')
+            ->with([
+                'user:id,name,profile_photo_path',
+                'children' => function ($query) {
+                    $query->select('id', 'comment', 'created_at', 'rate', 'user_id', 'parent_id')
+                        ->with('user:id,name,profile_photo_path');
+                }
+            ])->where('parent_id', 0)
+            ->get();
     }
 }

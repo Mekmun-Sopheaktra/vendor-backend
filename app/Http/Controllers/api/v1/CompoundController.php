@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api\v1;
 use App\Http\Controllers\Controller;
 use App\Models\Compound;
 use App\Models\CompoundProduct;
+use App\Models\Product;
 use App\Traits\BaseApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,47 +19,87 @@ class CompoundController extends Controller
         try {
             $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
 
-            // Eager load the 'products' relationship, including pivot data (inventory)
-            $compounds = Compound::with('products') // This will load related products along with pivot data
-            ->paginate($perPage);
+            $compounds = Compound::with('products')->paginate($perPage);
 
-            return $this->success($compounds);
+            return $this->success($compounds, 'Compounds retrieved successfully');
         } catch (\Exception $e) {
             return $this->failed(null, 'Error', $e->getMessage());
         }
     }
 
-    //store
     public function store(Request $request)
     {
         DB::beginTransaction();
+
         try {
-            // Create the compound
-            $compound = Compound::create($request->only(['name', 'price', 'description']));
+            // Validate the incoming data
+            $validatedData = $request->validate([
+                'user_id' => 'required|integer',
+                'brand_id' => 'required|string',
+                'title' => 'required|string|max:255',
+                'slug' => 'required|string|max:255|unique:products,slug',
+                'description' => 'nullable|string',
+                'price' => 'required|numeric',
+                'image' => 'nullable|string',
+                'volume' => 'nullable',
+                'product_code' => 'nullable|string',
+                'manufacturing_date' => 'nullable|date',
+                'fragrance_family' => 'nullable|string',
+                'expire_date' => 'nullable|date',
+                'gender' => 'nullable|string',
+                'discount' => 'nullable|numeric',
+                'priority' => 'nullable|string',
+                'compound_products' => 'required|array',  // Compound products must be an array
+                'compound_products.*.product_id' => 'required|integer|exists:products,id',  // Ensure product_id is valid
+                'compound_products.*.inventory' => 'required|integer',  // Ensure inventory is valid
+            ]);
 
-            // Validate and process compound_products data
-            $compoundProductsData = $request->get('compound_products', []);
-            if (!is_array($compoundProductsData) || empty($compoundProductsData)) {
-                throw new \Exception('Compound products data is required and must be an array.');
-            }
+            $compoundProductsData = $validatedData['compound_products'];
 
+            // Step 1: Create the product record first and get product_id
+            $product = Product::create([
+                'user_id' => $validatedData['user_id'],
+                'brand_id' => $validatedData['brand_id'],
+                'title' => $validatedData['title'],
+                'slug' => $validatedData['slug'],
+                'description' => $validatedData['description'],
+                'price' => $validatedData['price'],
+                'image' => $validatedData['image'],
+                'volume' => $validatedData['volume'],
+                'product_code' => $validatedData['product_code'],
+                'manufacturing_date' => $validatedData['manufacturing_date'],
+                'fragrance_family' => $validatedData['fragrance_family'],
+                'expire_date' => $validatedData['expire_date'],
+                'gender' => $validatedData['gender'],
+                'discount' => $validatedData['discount'],
+                'priority' => $validatedData['priority'],
+                'is_compound_product' => true, // Mark as compound product
+            ]);
+
+            // Step 2: Create the compound record using the created product_id
+            $compound = Compound::create([
+                'user_id' => $validatedData['user_id'],
+                'title' => $validatedData['title'],
+                'description' => $validatedData['description'],
+                'price' => $validatedData['price'],
+                'product_id' => $product->id, // Reference to the created product
+            ]);
+
+            // Step 3: Store data in the compound_products table
             $syncData = [];
-            foreach ($compoundProductsData as $product) {
-                if (empty($product['product_id']) || empty($product['inventory'])) {
-                    throw new \Exception('Each compound product must have product id and inventory.');
-                }
-
-                // Add the product_id and inventory to the sync data array
-                $syncData[$product['product_id']] = ['inventory' => $product['inventory']];
+            foreach ($compoundProductsData as $productData) {
+                $syncData[$productData['product_id']] = ['inventory' => $productData['inventory']];
             }
 
-            // Attach products with quantities to the compound
+            // Attach products to the compound using the compound_products pivot table
             $compound->products()->sync($syncData);
 
-            DB::commit(); // Commit transaction
+            DB::commit(); // Commit the transaction
+
             return $this->success($compound->load('products'), 'Compound created successfully');
+
         } catch (\Exception $e) {
-            DB::rollBack(); // Rollback transaction on failure
+            DB::rollBack(); // Rollback the transaction in case of failure
             return $this->failed(null, 'Error', $e->getMessage());
         }
     }
@@ -81,39 +122,69 @@ class CompoundController extends Controller
     //update
     public function update(Request $request, $id)
     {
-        DB::beginTransaction();
+        DB::beginTransaction();  // Start a database transaction
         try {
+            // Find the compound by ID
             $compound = Compound::find($id);
+
             if (!$compound) {
                 return $this->failed(null, 'Error', 'Compound not found');
             }
 
-            // Update the compound
-            $compound->update($request->only(['name', 'price', 'description']));
-
-            // Validate and process compound_products data
-            $compoundProductsData = $request->get('compound_products', []);
-            if (!is_array($compoundProductsData) || empty($compoundProductsData)) {
-                throw new \Exception('Compound products data is required and must be an array.');
+            // Find the product associated with the compound
+            $product = Product::find($compound->product_id);
+            if (!$product) {
+                return $this->failed(null, 'Error', 'Associated product not found');
             }
 
-            $syncData = [];
-            foreach ($compoundProductsData as $product) {
-                if (empty($product['product_id']) || empty($product['inventory'])) {
-                    throw new \Exception('Each compound product must have product id and inventory.');
+            // Validate the incoming data for compound fields
+            $validatedData = $request->validate([
+                'user_id' => 'nullable|integer',
+                'brand_id' => 'nullable|string',
+                'title' => 'nullable|string|max:255',
+                'slug' => 'nullable|string|max:255' . $compound->id,
+                'description' => 'nullable|string',
+                'price' => 'nullable|numeric',
+                'image' => 'nullable|string',
+                'volume' => 'nullable|numeric',
+                'product_code' => 'nullable|string',
+                'manufacturing_date' => 'nullable|date',
+                'fragrance_family' => 'nullable|string',
+                'expire_date' => 'nullable|date',
+                'gender' => 'nullable|string',
+                'discount' => 'nullable|numeric',
+                'priority' => 'nullable|string',
+                'compound_products' => 'nullable|array',  // compound_products is optional
+                'compound_products.*.product_id' => 'required|integer|exists:products,id',  // Validating product_id
+                'compound_products.*.inventory' => 'required|integer|min:0',  // Validating inventory
+            ]);
+
+            // Update the compound itself
+            $compound->update($validatedData);
+
+            // Update the product associated with the compound
+            $product->update($validatedData);
+
+            // Handle compound products data if it's provided
+            if (!empty($validatedData['compound_products'])) {
+                $compoundProductsData = $validatedData['compound_products'];
+
+                $syncData = [];
+                foreach ($compoundProductsData as $productData) {
+                    // Prepare data for syncing
+                    $syncData[$productData['product_id']] = ['inventory' => $productData['inventory']];
                 }
 
-                // Add the product_id and inventory to the sync data array
-                $syncData[$product['product_id']] = ['inventory' => $product['inventory']];
+                // Sync the products and their inventory with the compound
+                $compound->products()->sync($syncData);
             }
 
-            // Attach products with quantities to the compound
-            $compound->products()->sync($syncData);
+            DB::commit();  // Commit the transaction
 
-            DB::commit(); // Commit transaction
+            // Return success response with the updated compound and related products
             return $this->success($compound->load('products'), 'Compound updated successfully');
         } catch (\Exception $e) {
-            DB::rollBack(); // Rollback transaction on failure
+            DB::rollBack();  // Rollback transaction if an error occurs
             return $this->failed(null, 'Error', $e->getMessage());
         }
     }
@@ -121,15 +192,35 @@ class CompoundController extends Controller
     //destroy
     public function destroy($id)
     {
+        DB::beginTransaction(); // Start a transaction
+
         try {
+            // Find the compound by ID
             $compound = Compound::find($id);
+
             if (!$compound) {
                 return $this->failed(null, 'Error', 'Compound not found');
             }
 
+            // Find the product associated with the compound
+            $product = Product::find($compound->product_id);
+
+            // Optionally, detach associated products first (if necessary)
+            $compound->products()->detach();
+
+            // Delete the compound itself
             $compound->delete();
+
+            // Delete the product if it exists
+            if ($product) {
+                $product->delete();
+            }
+
+            DB::commit(); // Commit the transaction
+
             return $this->success(null, 'Compound deleted successfully');
         } catch (\Exception $e) {
+            DB::rollBack(); // Rollback transaction if an error occurs
             return $this->failed(null, 'Error', $e->getMessage());
         }
     }
@@ -137,24 +228,30 @@ class CompoundController extends Controller
     //addProduct
     public function addProduct(Request $request, $id)
     {
-        DB::beginTransaction();
+        DB::beginTransaction(); // Start a transaction
+
         try {
+            // Find the compound by ID
             $compound = Compound::find($id);
             if (!$compound) {
                 return $this->failed(null, 'Error', 'Compound not found');
             }
 
-            $productId = $request->get('product_id');
-            $inventory = $request->get('inventory');
-
-            if (!$productId || !$inventory) {
-                return $this->failed(null, 'Error', 'Product id and inventory are required');
-            }
+            // Validate the incoming request data
+            $validatedData = $request->validate([
+                'product_id' => 'required|integer|exists:products,id',
+                'inventory' => 'required|integer|min:0',
+            ]);
 
             // Attach the product with inventory to the compound
-            $compound->products()->attach($productId, ['inventory' => $inventory]);
+            $compound->products()->attach(
+                $validatedData['product_id'],
+                ['inventory' => $validatedData['inventory']]
+            );
 
             DB::commit(); // Commit transaction
+
+            // Return the updated compound with its products
             return $this->success($compound->load('products'), 'Product added to compound successfully');
         } catch (\Exception $e) {
             DB::rollBack(); // Rollback transaction on failure
@@ -165,22 +262,32 @@ class CompoundController extends Controller
     //removeProduct
     public function removeProduct(Request $request, $id)
     {
-        DB::beginTransaction();
+        DB::beginTransaction(); // Start a transaction
+
         try {
+            // Find the compound by ID
             $compound = Compound::find($id);
             if (!$compound) {
                 return $this->failed(null, 'Error', 'Compound not found');
             }
 
-            $productId = $request->get('product_id');
-            if (!$productId) {
-                return $this->failed(null, 'Error', 'Product id is required');
+            // Validate the incoming request data
+            $validatedData = $request->validate([
+                'product_id' => 'required|integer|exists:products,id',
+            ]);
+
+            // Check if the product is associated with the compound
+            $isAttached = $compound->products()->where('product_id', $validatedData['product_id'])->exists();
+            if (!$isAttached) {
+                return $this->failed(null, 'Error', 'Product is not associated with this compound');
             }
 
             // Detach the product from the compound
-            $compound->products()->detach($productId);
+            $compound->products()->detach($validatedData['product_id']);
 
             DB::commit(); // Commit transaction
+
+            // Return the updated compound with its products
             return $this->success($compound->load('products'), 'Product removed from compound successfully');
         } catch (\Exception $e) {
             DB::rollBack(); // Rollback transaction on failure
@@ -191,24 +298,35 @@ class CompoundController extends Controller
     //updateProduct
     public function updateProduct(Request $request, $id)
     {
-        DB::beginTransaction();
+        DB::beginTransaction(); // Start a transaction
+
         try {
+            // Find the compound by ID
             $compound = Compound::find($id);
             if (!$compound) {
                 return $this->failed(null, 'Error', 'Compound not found');
             }
 
-            $productId = $request->get('product_id');
-            $inventory = $request->get('inventory');
+            // Validate the incoming data
+            $validatedData = $request->validate([
+                'product_id' => 'required|integer|exists:products,id',
+                'inventory' => 'required|integer|min:0',
+            ]);
 
-            if (!$productId || !$inventory) {
-                return $this->failed(null, 'Error', 'Product id and inventory are required');
+            $productId = $validatedData['product_id'];
+            $inventory = $validatedData['inventory'];
+
+            // Check if the product is associated with the compound
+            $isAttached = $compound->products()->where('product_id', $productId)->exists();
+            if (!$isAttached) {
+                return $this->failed(null, 'Error', 'Product is not associated with this compound');
             }
 
             // Update the product inventory in the compound
             $compound->products()->updateExistingPivot($productId, ['inventory' => $inventory]);
 
             DB::commit(); // Commit transaction
+
             return $this->success($compound->load('products'), 'Product inventory updated successfully');
         } catch (\Exception $e) {
             DB::rollBack(); // Rollback transaction on failure
@@ -217,48 +335,4 @@ class CompoundController extends Controller
     }
 
     //showProduct
-    public function showProduct($id, $productId)
-    {
-        try {
-            $compound = Compound::with(['products' => function ($query) use ($productId) {
-                $query->where('product_id', $productId);
-            }])->find($id);
-
-            if (!$compound) {
-                return $this->failed(null, 'Error', 'Compound not found');
-            }
-
-            return $this->success($compound);
-        } catch (\Exception $e) {
-            return $this->failed(null, 'Error', $e->getMessage());
-        }
-    }
-
-    //adjustInventory
-    public function adjustInventory(Request $request, $id)
-    {
-        DB::beginTransaction();
-        try {
-            $compound = Compound::find($id);
-            if (!$compound) {
-                return $this->failed(null, 'Error', 'Compound not found');
-            }
-
-            $productId = $request->get('product_id');
-            $inventory = $request->get('inventory');
-
-            if (!$productId || !$inventory) {
-                return $this->failed(null, 'Error', 'Product id and inventory are required');
-            }
-
-            // Update the product inventory in the compound
-            $compound->products()->updateExistingPivot($productId, ['inventory' => $inventory]);
-
-            DB::commit(); // Commit transaction
-            return $this->success($compound->load('products'), 'Product inventory adjusted successfully');
-        } catch (\Exception $e) {
-            DB::rollBack(); // Rollback transaction on failure
-            return $this->failed(null, 'Error', $e->getMessage());
-        }
-    }
 }

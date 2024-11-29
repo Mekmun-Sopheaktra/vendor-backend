@@ -13,6 +13,7 @@ use App\Models\Product;
 use App\Traits\BaseApiResponse;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use MongoDB\Driver\Exception\EncryptionException;
 
@@ -57,31 +58,47 @@ class HomeController extends Controller
         }
     }
 
-    public function filter(): JsonResponse
+    public function search(Request $request): JsonResponse
     {
         try {
+            // Get the search term from the request, defaulting to an empty string if not provided
+            $searchTerm = $request->query('title', '');
+
+            // Query for minimum and maximum price
             $get_min_price = Product::query()->min('price');
             $get_max_price = Product::query()->max('price');
-            $categories = Category::query()->select('id', 'name', 'parent', 'icon')->get();
+
+            // Initialize the query for products
+            $query = Product::query();
+
+            // Only apply the title filter if the search term is not empty
+            if (!empty($searchTerm)) {
+                // Case-insensitive partial search for product titles
+                $query->whereRaw('LOWER(title) LIKE ?', ['%' . strtolower($searchTerm) . '%']); // Searching by product title, case-insensitive
+            }
+
+            // Get the filtered products
+            $products = $query->get();
 
             return $this->success([
                 'min_price' => $get_min_price,
                 'max_price' => $get_max_price,
-                'categories' => $categories,
+                'products' => $products,
             ]);
         } catch (\Exception $exception) {
             return $this->failed($exception->getMessage(), 'Error', 'Error from server');
         }
     }
 
-    public function search(SearchRequest $request): JsonResponse
+
+    public function filter(SearchRequest $request): JsonResponse
     {
         $validatedData = $request->validated();
 
         $productsQuery = Product::query();
 
         if ($request->has('categories_id')) {
-            $productsQuery->whereIn('category_id', explode(',', $validatedData['categories_id']));
+            $productsQuery->whereIn('id', explode(',', $validatedData['categories_id']));
         }
 
         if ($request->has('min_price')) {

@@ -26,6 +26,17 @@ class BasketController extends Controller
         return $this->success(BasketResource::collection($baskets), 'success', 'Product successfully.');
     }
 
+    //all cart for admin
+    public function all(): JsonResponse
+    {
+        $baskets = Basket::query()
+            ->where('status', 'created')
+            ->with('product')
+            ->get();
+
+        return $this->success(BasketResource::collection($baskets), 'success', 'Product successfully.');
+    }
+
     public function add(BasketRequest $request): JsonResponse
     {
         $userId = auth()->user()->id;
@@ -51,7 +62,7 @@ class BasketController extends Controller
             'title' => 'Product added to the basket',
             'description' => 'Product added to the basket successfully',
         ]);
-        
+
         return $this->success(null, 'success', 'Product added to the basket successfully.');
     }
 

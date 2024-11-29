@@ -12,14 +12,23 @@ class Product extends Model
 
     protected $fillable = [
         'user_id',
+        'brand_id',
         'title',
         'slug',
         'description',
         'price',
         'image',
+        'volume',
+        'product_code',
+        'manufacturing_date',
+        'fragrance_family',
+        'expire_date',
+        'gender',
         'inventory',
         'view_count',
-        'category_id',
+        'is_compound_product',
+        'discount',
+        'priority'
     ];
 
     // You can use this code for many-to-many relation
