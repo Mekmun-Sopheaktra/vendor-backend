@@ -72,17 +72,9 @@ class ProductController extends Controller
         return $this->success($products);
     }
 
-    public function show(Product $product): JsonResponse
+    public function show($id): JsonResponse
     {
-        $product->likes = $this->calculateLikesForProduct($product->id);
-        $product->isLike = $this->isProductLiked($product->id);
-        $product->rate = $this->calculateRateForProduct($product->id);
-        $product->category = $product->category;
-        $product->comments = CommentResource::collection($this->getComments($product));
-        $product->gallery = $product->galleries()->pluck('image')->map(function ($item) {
-            return secure_asset('storage/'.$item);
-        });
-
+        $product = Product::with(['categories', 'tags', 'galleries' ])->find($id);
         return $this->success($product);
     }
 
