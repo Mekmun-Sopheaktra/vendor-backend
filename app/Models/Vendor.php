@@ -15,6 +15,7 @@ class Vendor extends Model
         'slug',
         'address',
         'description',
+        'purpose',
         'logo',
         'email',
         'banner',
