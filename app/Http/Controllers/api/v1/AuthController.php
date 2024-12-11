@@ -29,7 +29,12 @@ class AuthController extends Controller
             $token = $user->createToken('token_base_name')->plainTextToken;
             $permission = $this->userPermissionRole($user);
 
-            return $this->successLogin($token, $permission,'Login', 'Login successful');
+            $user = [
+                'user' => $user,
+                'token' => $token,
+            ];
+
+            return $this->successLogin($user, $permission,'Login', 'Login successful');
         } catch (Exception $exception) {
             return $this->failed($exception->getMessage(), 'Error', 'Error form server');
         }
@@ -51,7 +56,12 @@ class AuthController extends Controller
 
             session(['registered_time' => now()]); // Store the time of registration
 
-            return $this->success($token, 'Registration', 'Registration successful', 201);
+            $user = [
+                'user' => $user,
+                'token' => $token,
+            ];
+
+            return $this->success($user, 'Registration', 'Registration successful', 201);
         } catch (Exception $exception) {
             return $this->failed($exception->getMessage(), 'Error', 'Error from server');
         }
