@@ -7,7 +7,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class CheckAdminApi
+class CheckVendorApi
 {
     public function handle(Request $request, Closure $next)
     {
@@ -18,7 +18,7 @@ class CheckAdminApi
             }
         }
 
-        if (auth()->check() && (auth()->user()->is_superuser)) {
+        if (auth()->check() && (auth()->user()->is_superuser || auth()->user()->is_vendor)) {
             return $next($request);
         }
 

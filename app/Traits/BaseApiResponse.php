@@ -11,7 +11,7 @@ trait BaseApiResponse
         $alert = ($title !== null || $message !== null) ? ['title' => $title, 'message' => $message] : null;
 
         return response()->json([
-            'result' => $data,
+            'data' => $data,
             'status' => true,
             'alert' => $alert,
         ], $code);
@@ -23,7 +23,7 @@ trait BaseApiResponse
         $alert = ($title !== null || $message !== null) ? ['title' => $title, 'message' => $message] : null;
 
         return response()->json([
-            'result' => $data,
+            'data' => $data,
             'permission' => $permission,
             'status' => true,
             'alert' => $alert,
@@ -35,7 +35,7 @@ trait BaseApiResponse
         $alert = ($title !== null || $message !== null) ? ['title' => $title, 'message' => $message] : null;
 
         return response()->json([
-            'result' => null,
+            'data' => null,
             'status' => false,
             'alert' => $alert,
         ], $code);

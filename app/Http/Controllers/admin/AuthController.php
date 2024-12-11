@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\admin;
 
+use App\Constants\RoleConstants;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\api\Exception;
 use App\Http\Requests\Auth\LoginRequest;
@@ -36,7 +37,12 @@ class AuthController extends Controller
 
             $token = $user->createToken('token_base_name')->plainTextToken;
 
-            return $this->success($token, 'Login', 'Login successful');
+            $vendor = [
+                'user' => $user,
+                'token' => $token,
+            ];
+
+            return $this->successLogin($vendor, RoleConstants::VENDOR , 'Login', 'Login successful');
         } catch (Exception $exception) {
             return $this->failed($exception->getMessage(), 'Error', 'Error form server');
         }

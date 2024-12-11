@@ -13,8 +13,7 @@ return new class extends Migration
     {
         Schema::create('vendors', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('product_vendor_id');
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->string('name');
             $table->string('slug');
             $table->string('address')->nullable();
@@ -23,6 +22,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('banner')->nullable();
             $table->tinyInteger('status')->default(0);
+            $table->string('purpose')->nullable();
             $table->timestamps();
         });
     }

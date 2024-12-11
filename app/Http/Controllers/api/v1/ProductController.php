@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Constants\ProductPriority;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Search\SearchRequest;
 use App\Http\Resources\Comment\CommentResource;
 use App\Http\Resources\Product\wishListCollection;
 use App\Models\Category;
@@ -19,10 +20,54 @@ class ProductController extends Controller
 {
     use BaseApiResponse;
 
-    public function index(Request $request): JsonResponse
+    public function index(SearchRequest $request): JsonResponse
     {
+        $validatedData = $request->validated();
+        $productsQuery = Product::query();
+
+        // Apply category filter
+        if (!empty($validatedData['categories_id'])) {
+            $productsQuery->whereIn('id', explode(',', $validatedData['categories_id']));
+        }
+
+        // Apply price range filters
+        if (!empty($validatedData['min_price'])) {
+            $productsQuery->where('price', '>=', $validatedData['min_price']);
+        }
+
+        if (!empty($validatedData['max_price'])) {
+            $productsQuery->where('price', '<=', $validatedData['max_price']);
+        }
+
+        // Apply sorting
+        if (!empty($validatedData['sort'])) {
+            switch ($validatedData['sort']) {
+                case '0':
+                    $productsQuery->orderBy('created_at', 'asc');
+                    break;
+                case '1':
+                    $productsQuery->orderBy('created_at', 'desc');
+                    break;
+                case '2':
+                    $productsQuery->orderBy('price', 'desc');
+                    break;
+                case '3':
+                    $productsQuery->orderBy('price', 'asc');
+                    break;
+                case '4':
+                    $productsQuery->orderBy('view_count', 'desc');
+                    break;
+                case '5':
+                    $productsQuery->orderBy('view_count', 'asc');
+                    break;
+            }
+        }
+
         $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
-        $products = Product::with(['categories', 'tags', 'galleries'])->paginate($perPage);
+        $page = $request->query('page', 1);
+
+        $products = $productsQuery->with(['categories', 'tags', 'galleries'])
+            ->paginate($perPage, ['*'], 'page', $page);
 
         return $this->success($products);
     }

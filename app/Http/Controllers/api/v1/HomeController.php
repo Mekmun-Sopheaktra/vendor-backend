@@ -8,6 +8,7 @@ use App\Http\Resources\Product\ProductCollection;
 use App\Http\Resources\Profile\AddressResource;
 use App\Models\Banner;
 use App\Models\Category;
+use App\Models\Compound;
 use App\Models\LikeProducts;
 use App\Models\Product;
 use App\Traits\BaseApiResponse;
@@ -24,10 +25,15 @@ class HomeController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $banners = Banner::query()->select('id', 'banner')->get();
+            $banners = Banner::query()
+                ->select('id', 'banner')
+                ->take(5)
+                ->get();
 
-            $products = Product::query()->select('id', 'title', 'description', 'price', 'image')->get();
-
+            $products = Product::query()
+                ->select('id', 'title', 'description', 'price', 'image')
+                ->take(5)
+                ->get();
 
             foreach ($products as $product) {
                 $product->likes = $this->calculateLikesForProduct($product->id);
@@ -35,24 +41,35 @@ class HomeController extends Controller
                 $product->rate = $this->calculateRateForProduct($product->id);
             }
 
-            $categories = Category::query()->select('id', 'name', 'parent', 'icon')->get();
+            $categories = Category::query()
+                ->select('id', 'name', 'parent', 'icon')
+                ->take(5)
+                ->get();
 
             $address = null;
             if (auth()->user()) {
-                $address = auth()->user()->address()->first() ? new AddressResource(auth()->user()->address()->first()) : null;
+                $address = auth()->user()->address()->first()
+                    ? new AddressResource(auth()->user()->address()->first())
+                    : null;
             }
+
+            // Compound products
+            $compounds = Compound::with(['products' => function ($query) {
+                $query->take(5);
+            }])->take(5)->get();
 
             return $this->success([
                 'banners' => $banners,
                 'categories' => $categories,
                 'newest_product' => $products,
                 'address' => $address,
+                'compound' => $compounds,
                 'flash_sale' => [
                     'expired_at' => Carbon::now()->addDays(5),
                     'products' => $products,
                 ],
                 'most_sale' => $products,
-            ]);
+            ], 'Home', 'Home fetched successfully');
         } catch (EncryptionException $exception) {
             return $this->failed($exception->getMessage(), 'Error', 'Error from server');
         }

@@ -35,24 +35,6 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'api.admin'])->group(functio
 
     Route::get('product/{product}/like', [LikeController::class, 'likeProduct'])->name('api.admin.product.like');
 
-    //compound
-    Route::get('compound', [CompoundController::class, 'index'])->name('api.admin.compound');
-    Route::post('compound', [CompoundController::class, 'store'])->name('api.admin.compound.store');
-    //show
-    Route::get('compound/{compound}', [CompoundController::class, 'show'])->name('api.admin.compound.show');
-    //update
-    Route::post('compound/{compound}', [CompoundController::class, 'update'])->name('api.admin.compound.update');
-    //delete
-    Route::delete('compound/{compound}', [CompoundController::class, 'destroy'])->name('api.admin.compound.delete');
-    //add product to compound
-    Route::post('compound/{compound}/add', [CompoundController::class, 'addProduct'])->name('api.admin.compound.add');
-    //remove product from compound
-    Route::post('compound/{compound}/remove', [CompoundController::class, 'removeProduct'])->name('api.admin.compound.remove');
-    //update product in compound
-    Route::post('compound/{compound}/update', [CompoundController::class, 'updateProduct'])->name('api.admin.compound.update.product');
-    //show product in compound
-
-
     Route::get('comment/{product}', [CommentController::class, 'index'])->name('api.admin.comment');
     Route::post('comment', [CommentController::class, 'store'])->name('api.admin.comment.store');
 

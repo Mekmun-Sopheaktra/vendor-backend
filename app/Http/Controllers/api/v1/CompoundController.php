@@ -18,8 +18,16 @@ class CompoundController extends Controller
     {
         try {
             $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
+            $userId = auth()->id(); // Assuming user_id is passed as a query parameter
 
-            $compounds = Compound::with('products')->paginate($perPage);
+            if (!$userId) {
+                return $this->failed(null, 'User ID is required', 400);
+            }
+
+            // Filter compounds by user_id
+            $compounds = Compound::with('products')
+                ->where('user_id', $userId)
+                ->paginate($perPage);
 
             return $this->success($compounds, 'Compounds retrieved successfully');
         } catch (\Exception $e) {
@@ -34,7 +42,6 @@ class CompoundController extends Controller
         try {
             // Validate the incoming data
             $validatedData = $request->validate([
-                'user_id' => 'required|integer',
                 'brand_id' => 'required|string',
                 'title' => 'required|string|max:255',
                 'slug' => 'required|string|max:255|unique:products,slug',
@@ -54,11 +61,11 @@ class CompoundController extends Controller
                 'compound_products.*.inventory' => 'required|integer',  // Ensure inventory is valid
             ]);
 
-            $compoundProductsData = $validatedData['compound_products'];
+            $userId = auth()->id();
 
-            // Step 1: Create the product record first and get product_id
+            // Step 2: Create the product record first and get product_id
             $product = Product::create([
-                'user_id' => $validatedData['user_id'],
+                'user_id' => $userId, // Use authenticated user's ID
                 'brand_id' => $validatedData['brand_id'],
                 'title' => $validatedData['title'],
                 'slug' => $validatedData['slug'],
@@ -76,18 +83,18 @@ class CompoundController extends Controller
                 'is_compound_product' => true, // Mark as compound product
             ]);
 
-            // Step 2: Create the compound record using the created product_id
+            // Step 3: Create the compound record using the created product_id
             $compound = Compound::create([
-                'user_id' => $validatedData['user_id'],
+                'user_id' => $userId, // Use authenticated user's ID
                 'title' => $validatedData['title'],
                 'description' => $validatedData['description'],
                 'price' => $validatedData['price'],
                 'product_id' => $product->id, // Reference to the created product
             ]);
 
-            // Step 3: Store data in the compound_products table
+            // Step 4: Store data in the compound_products table
             $syncData = [];
-            foreach ($compoundProductsData as $productData) {
+            foreach ($validatedData['compound_products'] as $productData) {
                 $syncData[$productData['product_id']] = ['inventory' => $productData['inventory']];
             }
 
@@ -108,12 +115,17 @@ class CompoundController extends Controller
     public function show($id)
     {
         try {
-            $compound = Compound::with('products')->find($id);
+            // Fetch the compound record that matches the ID and belongs to the authenticated user
+            $compound = Compound::with('products')
+                ->where('id', $id)
+                ->where('user_id', auth()->id()) // Filter by the authenticated user's ID
+                ->first();
+
             if (!$compound) {
-                return $this->failed(null, 'Error', 'Compound not found');
+                return $this->failed(null, 'Error', 'Compound not found or access denied');
             }
 
-            return $this->success($compound);
+            return $this->success($compound, 'Compound retrieved successfully');
         } catch (\Exception $e) {
             return $this->failed(null, 'Error', $e->getMessage());
         }
@@ -125,7 +137,9 @@ class CompoundController extends Controller
         DB::beginTransaction();  // Start a database transaction
         try {
             // Find the compound by ID
-            $compound = Compound::find($id);
+            $compound = Compound::where('id', $id)
+                ->where('user_id', auth()->id())
+                ->first();
 
             if (!$compound) {
                 return $this->failed(null, 'Error', 'Compound not found');
@@ -139,7 +153,6 @@ class CompoundController extends Controller
 
             // Validate the incoming data for compound fields
             $validatedData = $request->validate([
-                'user_id' => 'nullable|integer',
                 'brand_id' => 'nullable|string',
                 'title' => 'nullable|string|max:255',
                 'slug' => 'nullable|string|max:255' . $compound->id,
@@ -196,7 +209,9 @@ class CompoundController extends Controller
 
         try {
             // Find the compound by ID
-            $compound = Compound::find($id);
+            $compound = Compound::where('id', $id)
+                ->where('user_id', auth()->id())
+                ->first();
 
             if (!$compound) {
                 return $this->failed(null, 'Error', 'Compound not found');
@@ -232,7 +247,9 @@ class CompoundController extends Controller
 
         try {
             // Find the compound by ID
-            $compound = Compound::find($id);
+            $compound = Compound::where('id', $id)
+                ->where('user_id', auth()->id())
+                ->first();
             if (!$compound) {
                 return $this->failed(null, 'Error', 'Compound not found');
             }
@@ -266,7 +283,9 @@ class CompoundController extends Controller
 
         try {
             // Find the compound by ID
-            $compound = Compound::find($id);
+            $compound = Compound::where('id', $id)
+                ->where('user_id', auth()->id())
+                ->first();
             if (!$compound) {
                 return $this->failed(null, 'Error', 'Compound not found');
             }
@@ -302,7 +321,9 @@ class CompoundController extends Controller
 
         try {
             // Find the compound by ID
-            $compound = Compound::find($id);
+            $compound = Compound::where('id', $id)
+                ->where('user_id', auth()->id())
+                ->first();
             if (!$compound) {
                 return $this->failed(null, 'Error', 'Compound not found');
             }

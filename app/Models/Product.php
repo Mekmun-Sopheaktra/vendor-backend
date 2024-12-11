@@ -12,6 +12,7 @@ class Product extends Model
 
     protected $fillable = [
         'user_id',
+        'vendor_id',
         'brand_id',
         'title',
         'slug',
@@ -59,7 +60,8 @@ class Product extends Model
 
     public function vendors()
     {
-        return $this->belongsToMany(Vendor::class , 'product_vendor')->withPivot('product_id', 'vendor_id');
+        //one vendors to many products
+        return $this->belongsTo(Vendor::class);
     }
 
     // In Product.php (Product Model)

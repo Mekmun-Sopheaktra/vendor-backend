@@ -1,16 +1,20 @@
 <?php
 
+use App\Http\Controllers\admin\AuthController;
 use App\Http\Controllers\api\v1\BasketController;
 use App\Http\Controllers\api\v1\CommentController;
+use App\Http\Controllers\api\v1\CompoundController;
 use App\Http\Controllers\api\v1\HomeController;
 use App\Http\Controllers\api\v1\LikeController;
 use App\Http\Controllers\api\v1\NotificationController;
 use App\Http\Controllers\api\v1\OrderController;
-use App\Http\Controllers\api\v1\ProductController;
 use App\Http\Controllers\api\v1\ProfileController;
+use App\Http\Controllers\api\v1\vendor\VendorProductController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('vendor')->middleware('auth:sanctum')->group(function () {
+Route::post('vendor/login', [AuthController::class, 'Login'])->name('api.login');
+
+Route::prefix('vendor')->middleware(['auth:sanctum', 'api.vendor'])->group(function () {
     Route::get('profile', [ProfileController::class, 'index'])->name('api.vendor.profile');
     Route::post('profile', [ProfileController::class, 'update'])->name('api.vendor.update.profile');
     Route::get('home', [HomeController::class, 'index'])->name('api.vendor.home');
@@ -20,15 +24,40 @@ Route::prefix('vendor')->middleware('auth:sanctum')->group(function () {
         Route::get('', [HomeController::class, 'search'])->name('api.vendor.search.data');
     });
 
-    Route::resource('product', ProductController::class)
-        ->except(['store', 'update', 'destroy', 'edit'])
-        ->names([
-            'index' => 'product.vendor.index',
-            'show' => 'product.vendor.show',
-            'create' => 'product.vendor.create'
-        ]);
+    //products
+    Route::post('product/create', [VendorProductController::class, 'store'])->name('api.vendor.product.store');
+    Route::get('products', [VendorProductController::class, 'index'])->name('api.vendor.products');
 
     Route::get('product/{product}/like', [LikeController::class, 'likeProduct'])->name('api.vendor.product.like');
+
+    Route::prefix('compound')->name('api.admin.compound.')->group(function () {
+        // List compounds
+        Route::get('/', [CompoundController::class, 'index'])->name('index');
+
+        // Create a compound
+        Route::post('/', [CompoundController::class, 'store'])->name('store');
+
+        // Show a specific compound
+        Route::get('/{compound}', [CompoundController::class, 'show'])->name('show');
+
+        // Update a specific compound
+        Route::post('/{compound}', [CompoundController::class, 'update'])->name('update');
+
+        // Delete a specific compound
+        Route::delete('/{compound}', [CompoundController::class, 'destroy'])->name('delete');
+
+        // Add a product to a compound
+        Route::post('/{compound}/add', [CompoundController::class, 'addProduct'])->name('add.product');
+
+        // Remove a product from a compound
+        Route::post('/{compound}/remove', [CompoundController::class, 'removeProduct'])->name('remove.product');
+
+        // Update a product in a compound
+        Route::post('/{compound}/update', [CompoundController::class, 'updateProduct'])->name('update.product');
+
+        // Show products in a compound
+        Route::get('/{compound}/products', [CompoundController::class, 'showProducts'])->name('show.products');
+    });
 
     Route::get('comment/{product}', [CommentController::class, 'index'])->name('api.vendor.comment');
     Route::post('comment', [CommentController::class, 'store'])->name('api.vendor.comment.store');
