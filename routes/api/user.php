@@ -34,6 +34,7 @@ Route::get('v1/home', [HomeController::class, 'index'])->name('api.home');
 Route::get('v1/products', [ProductController::class, 'index'])->name('api.product');
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
+    Route::get('me', [AuthController::class, 'me'])->name('api.me');
     Route::get('permission', [AuthController::class, 'Permission']);
     Route::get('profile', [ProfileController::class, 'index'])->name('api.profile');
     Route::post('profile', [ProfileController::class, 'update'])->name('api.update.profile');

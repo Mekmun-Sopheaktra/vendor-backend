@@ -67,6 +67,16 @@ class AuthController extends Controller
         }
     }
 
+    public function me(): JsonResponse
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return $this->failed(null, 'Unauthorized', 'Unauthorized', 401);
+        }
+
+        return $this->success($user, 'User', 'User found');
+    }
+
     public function Permission(): JsonResponse
     {
         $auth = auth()->user();
