@@ -31,7 +31,8 @@ Route::post('v1/vendor/{id}/create', [VendorController::class, 'createVendor'])-
 Route::get('v1/home', [HomeController::class, 'index'])->name('api.home');
 
 //product routes
-Route::get('v1/products', [ProductController::class, 'index'])->name('api.product');
+Route::get('v1/product/all', [ProductController::class, 'index'])->name('api.product');
+Route::get('v1/product/{product}', [ProductController::class, 'show'])->name('api.product.show');
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('me', [AuthController::class, 'me'])->name('api.me');
@@ -63,7 +64,6 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::get('new-arrivals', [ProductController::class, 'newArrivals'])->name('api.product.new.arrivals'); // New arrivals
         Route::get('wishlist', [ProductController::class, 'wishlist'])->name('api.product.wishlist');
         Route::get('', [ProductController::class, 'index'])->name('api.product');
-        Route::get('{product}', [ProductController::class, 'show'])->name('api.product.show');
         Route::post('{product}/like', [LikeController::class, 'likeProduct'])->name('api.product.like');
     });
 
