@@ -10,10 +10,13 @@ use App\Http\Controllers\api\v1\NotificationController;
 use App\Http\Controllers\api\v1\OrderController;
 use App\Http\Controllers\api\v1\ProductController;
 use App\Http\Controllers\api\v1\ProfileController;
+use App\Http\Controllers\api\v1\VendorController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('admin/login', [AdminAuthController::class, 'Login'])->middleware('api.admin')->name('api.admin.login');
 Route::post('admin/register', [AdminAuthController::class, 'Register'])->name('api.admin.register');
+//createVendor create vendor data and send email to vendor for verification
+Route::post('v1/vendor/{id}/create', [VendorController::class, 'createVendor'])->name('api.vendor.create');
 
 Route::prefix('admin')->middleware(['auth:sanctum', 'api.admin'])->group(function () {
     Route::get('profile', [ProfileController::class, 'index'])->name('api.admin.profile');

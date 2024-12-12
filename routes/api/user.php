@@ -25,8 +25,6 @@ Route::prefix('v1')->group(function () {
 
 //requestVendor create vendor data
 Route::post('v1/request/vendor', [VendorController::class, 'requestVendor'])->name('api.vendor.request');
-//createVendor create vendor data and send email to vendor for verification
-Route::post('v1/vendor/{id}/create', [VendorController::class, 'createVendor'])->name('api.vendor.create');
 
 Route::get('v1/home', [HomeController::class, 'index'])->name('api.home');
 

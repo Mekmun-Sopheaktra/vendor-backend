@@ -23,6 +23,7 @@ class BasketController extends Controller
             ->where('status', 'created')
             ->with('product')->get();
 
+        logger($baskets);
         return $this->success(BasketResource::collection($baskets), 'success', 'Product successfully.');
     }
 
@@ -99,9 +100,9 @@ class BasketController extends Controller
                 $method = 'economy';
             case 1:
                 $method = 'regular';
-            case 1:
+            case 2:
                 $method = 'cargo';
-            case 1:
+            case 3:
                 $method = 'express';
         }
 
@@ -115,7 +116,7 @@ class BasketController extends Controller
         foreach ($products as $product) {
             OrderProduct::query()->create([
                 'order_id' => $order->id,
-                'product_id' => $product->id,
+                'product_id' => $product->product_id,
                 'count' => $product->count,
             ]);
         }

@@ -78,7 +78,7 @@ class VendorController extends Controller
 
             // If the user was recently created or doesn't have a verified email, send email verification
             if ($user->wasRecentlyCreated || !$user->hasVerifiedEmail()) {
-                $user->sendEmailVerificationNotification();
+                $user->markEmailAsVerified();
             }
 
             //get user id and update vendor table user_id

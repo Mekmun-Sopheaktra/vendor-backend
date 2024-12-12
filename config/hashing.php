@@ -51,4 +51,7 @@ return [
         'verify' => true,
     ],
 
+    //hashing key
+    'hash_key' => env('HASH_KEY', 'hash_key'),
+
 ];

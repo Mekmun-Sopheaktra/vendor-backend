@@ -9,6 +9,7 @@ use App\Http\Controllers\api\v1\LikeController;
 use App\Http\Controllers\api\v1\NotificationController;
 use App\Http\Controllers\api\v1\OrderController;
 use App\Http\Controllers\api\v1\ProfileController;
+use App\Http\Controllers\api\v1\vendor\VendorOrderController;
 use App\Http\Controllers\api\v1\vendor\VendorProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -27,7 +28,6 @@ Route::prefix('vendor')->middleware(['auth:sanctum', 'api.vendor'])->group(funct
     //products
     Route::post('product/create', [VendorProductController::class, 'store'])->name('api.vendor.product.store');
     Route::get('products', [VendorProductController::class, 'index'])->name('api.vendor.products');
-
     Route::get('product/{product}/like', [LikeController::class, 'likeProduct'])->name('api.vendor.product.like');
 
     Route::prefix('compound')->name('api.admin.compound.')->group(function () {
@@ -70,7 +70,7 @@ Route::prefix('vendor')->middleware(['auth:sanctum', 'api.vendor'])->group(funct
     });
 
     Route::prefix('orders')->group(function () {
-        Route::get('', [OrderController::class, 'index']);
+        Route::get('', [VendorOrderController::class, 'index']);
     });
 
     Route::get('address', [ProfileController::class, 'address'])->name('api.vendor.address');

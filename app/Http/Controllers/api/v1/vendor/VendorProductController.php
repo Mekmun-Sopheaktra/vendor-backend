@@ -17,11 +17,14 @@ class VendorProductController extends Controller
     {
         //get vendor id from user table
         $vendor_id = auth()->user()->vendor->id;
+        if (!$vendor_id) {
+            return $this->failed(null, 'Vendor not found', 'Vendor not found', 404);
+        }
         $products = Product::query()
             ->where('vendor_id', $vendor_id)
             ->paginate(10);
 
-        return response()->json($products);
+        return $this->success($products, 'Products retrieved successfully');
     }
 
     public function create()
@@ -62,6 +65,9 @@ class VendorProductController extends Controller
             $validatedData['image'] = $imagePath;
         }
 
+        if (!auth()->user()->vendor) {
+            return $this->failed(null, 'Vendor not found', 'Vendor not found', 404);
+        }
         // user_id
         $validatedData['user_id'] = auth()->user()->id;
         $validatedData['vendor_id'] = auth()->user()->vendor->id;
@@ -80,5 +86,11 @@ class VendorProductController extends Controller
         }
 
         return $this->success($product, 'Product created successfully');
+    }
+
+    // show product
+    public function show(Request $requestt)
+    {
+
     }
 }
