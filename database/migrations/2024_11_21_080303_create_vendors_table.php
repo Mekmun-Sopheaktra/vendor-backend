@@ -1,5 +1,6 @@
 <?php
 
+use App\Constants\VendorStatusConstants;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -21,7 +22,7 @@ return new class extends Migration
             $table->string('logo')->nullable();
             $table->string('email')->nullable();
             $table->string('banner')->nullable();
-            $table->tinyInteger('status')->default(0);
+            $table->string('status')->default(VendorStatusConstants::PENDING);
             $table->string('purpose')->nullable();
             $table->timestamps();
         });

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\admin\AuthController as AdminAuthController;
 use App\Http\Controllers\admin\CategoryController;
+use App\Http\Controllers\admin\DashboardController;
 use App\Http\Controllers\api\v1\BasketController;
 use App\Http\Controllers\api\v1\CommentController;
 use App\Http\Controllers\api\v1\HomeController;
@@ -21,7 +22,7 @@ Route::post('v1/vendor/{id}/create', [VendorController::class, 'createVendor'])-
 Route::prefix('admin')->middleware(['auth:sanctum', 'api.admin'])->group(function () {
     Route::get('profile', [ProfileController::class, 'index'])->name('api.admin.profile');
     Route::post('profile', [ProfileController::class, 'update'])->name('api.admin.update.profile');
-    Route::get('home', [HomeController::class, 'index'])->name('api.admin.home');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('api.admin.home');
 
     Route::prefix('search')->group(function () {
         Route::get('filter', [HomeController::class, 'filter'])->name('api.admin.filter.data');

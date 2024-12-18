@@ -2,19 +2,24 @@
 
 namespace App\Http\Controllers\admin;
 
+use App\Constants\VendorStatusConstants;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\Vendor;
+use App\Traits\BaseApiResponse;
 
 class DashboardController extends Controller
 {
+    use BaseApiResponse;
+
     //index
     public function index()
     {
         // Total users
-        $totalUsers = User::count();
+        $totalUsers = Vendor::query()->where('status', VendorStatusConstants::ACTIVE)->count();
 
         // Total orders from Model Order
         $totalOrders = Order::count();
@@ -30,7 +35,11 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-
-        return view('admin.dashboard.index', compact('totalUsers', 'totalOrders', 'totalProducts', 'stats'));
+        return $this->success([
+            'total_vendors' => $totalUsers,
+            'total_orders' => $totalOrders,
+            'total_products' => $totalProducts,
+            'top_products' => $stats
+        ]);
     }
 }
