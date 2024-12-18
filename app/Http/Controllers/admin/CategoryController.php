@@ -15,7 +15,6 @@ class CategoryController extends Controller
 
     public function index(Request $request)
     {
-        logger('index');
         $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 15));
 
         $categories = Category::paginate($perPage);
