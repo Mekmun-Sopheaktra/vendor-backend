@@ -4,12 +4,11 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\api\Exception;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
-use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\UserAuth\LoginRequest;
+use App\Http\Requests\UserAuth\RegisterRequest;
 use App\Models\User;
 use App\Traits\BaseApiResponse;
 use App\Traits\CheckUserPermission;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 
