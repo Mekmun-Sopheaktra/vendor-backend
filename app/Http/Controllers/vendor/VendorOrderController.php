@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\api\v1\vendor;
+namespace App\Http\Controllers\vendor;
 
 use App\Constants\RoleConstants;
 use App\Http\Controllers\Controller;

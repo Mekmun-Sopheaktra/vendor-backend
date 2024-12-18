@@ -8,8 +8,8 @@ use App\Http\Controllers\api\v1\HomeController;
 use App\Http\Controllers\api\v1\LikeController;
 use App\Http\Controllers\api\v1\NotificationController;
 use App\Http\Controllers\api\v1\ProfileController;
-use App\Http\Controllers\api\v1\vendor\VendorOrderController;
-use App\Http\Controllers\api\v1\vendor\VendorProductController;
+use App\Http\Controllers\vendor\VendorOrderController;
+use App\Http\Controllers\vendor\VendorProductController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('vendor/login', [AuthController::class, 'Login'])->name('api.vendor.login');
