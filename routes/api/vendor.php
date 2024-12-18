@@ -12,7 +12,7 @@ use App\Http\Controllers\api\v1\vendor\VendorOrderController;
 use App\Http\Controllers\api\v1\vendor\VendorProductController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('vendor/login', [AuthController::class, 'Login'])->name('api.login');
+Route::post('vendor/login', [AuthController::class, 'Login'])->name('api.vendor.login');
 
 Route::prefix('vendor')->middleware(['auth:sanctum', 'api.vendor'])->group(function () {
     Route::get('profile', [ProfileController::class, 'index'])->name('api.vendor.profile');
