@@ -7,7 +7,6 @@ use App\Http\Controllers\api\v1\CompoundController;
 use App\Http\Controllers\api\v1\HomeController;
 use App\Http\Controllers\api\v1\LikeController;
 use App\Http\Controllers\api\v1\NotificationController;
-use App\Http\Controllers\api\v1\OrderController;
 use App\Http\Controllers\api\v1\ProfileController;
 use App\Http\Controllers\api\v1\vendor\VendorOrderController;
 use App\Http\Controllers\api\v1\vendor\VendorProductController;

@@ -11,6 +11,7 @@ use App\Livewire\ProductGallery\All as AllGallery;
 use App\Livewire\Products\Add as AddProduct;
 use App\Livewire\Products\All as AllProducts;
 use App\Livewire\Users\All as AllUsers;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Route;
 
 //route home
@@ -59,11 +60,11 @@ Route::prefix('admin')->name('admin.')->middleware([
 //    return view('mail.verify-user', compact('code'));
 //})->middleware('auth')->name('verification.notice');
 //
-//Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-//    $request->fulfill();
-//
-//    return redirect('/home');
-//})->middleware(['auth', 'signed'])->name('verification.verify');
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+
+    return redirect('/home');
+})->middleware(['auth', 'signed'])->name('verification.verify');
 
 Route::prefix('v1')->group(function () {
     Route::get('email/verify/{id}/{hash}', [WebAuthController::class, 'verify'])->name('web.verification.verify');

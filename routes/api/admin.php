@@ -1,9 +1,9 @@
 <?php
 
 use App\Http\Controllers\admin\AuthController as AdminAuthController;
+use App\Http\Controllers\admin\CategoryController;
 use App\Http\Controllers\api\v1\BasketController;
 use App\Http\Controllers\api\v1\CommentController;
-use App\Http\Controllers\api\v1\CompoundController;
 use App\Http\Controllers\api\v1\HomeController;
 use App\Http\Controllers\api\v1\LikeController;
 use App\Http\Controllers\api\v1\NotificationController;
@@ -46,6 +46,13 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'api.admin'])->group(functio
         Route::post('add', [BasketController::class, 'add'])->name('api.admin.cart.add');
         Route::post('delete', [BasketController::class, 'delete'])->name('api.admin.cart.delete');
         Route::post('buy', [BasketController::class, 'buy'])->name('api.admin.cart.buy');
+    });
+
+    Route::prefix('category')->group(function () {
+        Route::get('', [CategoryController::class, 'index'])->name('api.admin.category');
+        Route::get('{category}', [CategoryController::class, 'show'])->name('api.admin.category.show');
+        Route::post('', [CategoryController::class, 'store'])->name('api.admin.category.add');
+        Route::delete('delete/{category}', [CategoryController::class, 'destroy'])->name('api.admin.category.delete');
     });
 
     Route::prefix('orders')->group(function () {
