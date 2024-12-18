@@ -21,7 +21,14 @@ class AuthController extends Controller
         try {
             $user = User::query()->select('id', 'email', 'password')
                 ->where('email', $request->input('email'))
-                ->where('is_superuser', '=' , 1)
+                ->where(function ($query) {
+                    $query->where('is_superuser', 1)
+                        ->where('is_vendor', 0)
+                        ->orWhere(function ($query) {
+                            $query->where('is_superuser', 0)
+                                ->where('is_vendor', 1);
+                        });
+                })
                 ->first();
 
             if (! $user || ! Hash::check($request->input('password'), $user->password)) {
