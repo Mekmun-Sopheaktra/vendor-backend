@@ -11,13 +11,13 @@ class LoginRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return true;
+        return false;
     }
 
     public function rules(): array
     {
         return [
-            'email' => 'required|max:255|email',
+            'email' => 'required|max:255',
             'password' => 'required',
         ];
     }
