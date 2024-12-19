@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\admin\AuthController;
 use App\Http\Controllers\api\v1\BasketController;
 use App\Http\Controllers\api\v1\CommentController;
 use App\Http\Controllers\api\v1\CompoundController;
@@ -8,11 +7,12 @@ use App\Http\Controllers\api\v1\HomeController;
 use App\Http\Controllers\api\v1\LikeController;
 use App\Http\Controllers\api\v1\NotificationController;
 use App\Http\Controllers\api\v1\ProfileController;
+use App\Http\Controllers\vendor\VendorAuthController;
 use App\Http\Controllers\vendor\VendorOrderController;
 use App\Http\Controllers\vendor\VendorProductController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('vendor/login', [AuthController::class, 'Login'])->name('api.vendor.login');
+Route::post('vendor/login', [VendorAuthController::class, 'Login'])->name('api.vendor.login');
 
 Route::prefix('vendor')->middleware(['auth:sanctum', 'api.vendor'])->group(function () {
     Route::get('profile', [ProfileController::class, 'index'])->name('api.vendor.profile');
@@ -29,7 +29,7 @@ Route::prefix('vendor')->middleware(['auth:sanctum', 'api.vendor'])->group(funct
     Route::get('products', [VendorProductController::class, 'index'])->name('api.vendor.products');
     Route::get('product/{product}/like', [LikeController::class, 'likeProduct'])->name('api.vendor.product.like');
 
-    Route::prefix('compound')->name('api.admin.compound.')->group(function () {
+    Route::prefix('compound')->name('api.vendor.compound.')->group(function () {
         // List compounds
         Route::get('/', [CompoundController::class, 'index'])->name('index');
 

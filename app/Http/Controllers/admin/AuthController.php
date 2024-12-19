@@ -4,12 +4,13 @@ namespace App\Http\Controllers\admin;
 
 use App\Constants\RoleConstants;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\api\Exception;
 use App\Http\Requests\UserAuth\LoginRequest;
 use App\Http\Requests\UserAuth\RegisterRequest;
 use App\Models\User;
 use App\Traits\BaseApiResponse;
+use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -42,14 +43,15 @@ class AuthController extends Controller
                 'token' => $token,
             ];
 
-            return $this->successLogin($vendor, RoleConstants::VENDOR , 'Login', 'Login successful');
+            return $this->successLogin($vendor, RoleConstants::SUPERUSER , 'Login', 'Login successful');
         } catch (Exception $exception) {
             return $this->failed($exception->getMessage(), 'Error', 'Error form server');
         }
     }
-
     public function Register(RegisterRequest $request): JsonResponse
     {
+        DB::beginTransaction();
+
         try {
             $user = User::query()
                 ->select('id')
@@ -57,9 +59,12 @@ class AuthController extends Controller
 
             $token = $user->createToken('token_base_name')->plainTextToken;
 
+            DB::commit();
+
             return $this->success($token, 'Registration', 'Registration successful', 201);
         } catch (Exception $exception) {
-            return $this->failed($exception->getMessage(), 'Error', 'Error form server');
+            DB::rollBack();
+            return $this->failed($exception->getMessage(), 'Error', 'Error from server');
         }
     }
 }

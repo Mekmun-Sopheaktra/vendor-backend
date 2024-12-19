@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\api\v1;
 
-use App\Http\Controllers\api\Exception;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserAuth\LoginRequest;
 use App\Http\Requests\UserAuth\RegisterRequest;
 use App\Models\User;
 use App\Traits\BaseApiResponse;
 use App\Traits\CheckUserPermission;
+use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -42,26 +43,40 @@ class AuthController extends Controller
     public function Register(RegisterRequest $request): JsonResponse
     {
         // Check if the user has already registered recently
-        $user = User::query()->where('email', $request->input('email'))->first();
-        if ($user) {
+        $existingUser = User::query()->where('email', $request->input('email'))->first();
+        if ($existingUser) {
             return $this->failed(null, 'Fail', 'User already exists', 409);
         }
 
+        DB::beginTransaction();
+
         try {
+            // Create the user
             $user = User::query()->create($request->all());
+
+            // Generate a token for the user
             $token = $user->createToken('token_base_name')->plainTextToken;
 
-            $user->sendEmailVerificationNotification(); // This sends the email
+            // Send email verification notification
+            $user->sendEmailVerificationNotification();
 
-            session(['registered_time' => now()]); // Store the time of registration
+            // Store registration time in session
+            session(['registered_time' => now()]);
 
-            $user = [
+            // Commit the transaction
+            DB::commit();
+
+            // Prepare user and token response
+            $response = [
                 'user' => $user,
                 'token' => $token,
             ];
 
-            return $this->success($user, 'Registration', 'Registration successful', 201);
+            return $this->success($response, 'Registration', 'Registration successful', 201);
         } catch (Exception $exception) {
+            // Rollback the transaction in case of error
+            DB::rollBack();
+
             return $this->failed($exception->getMessage(), 'Error', 'Error from server');
         }
     }
