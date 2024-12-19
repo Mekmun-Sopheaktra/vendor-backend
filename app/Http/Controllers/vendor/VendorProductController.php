@@ -16,7 +16,7 @@ class VendorProductController extends Controller
     public function index()
     {
         //get vendor id from user table
-        $vendor_id = auth()->user()->vendor->id;
+        $vendor_id = auth()->user()?->vendor?->id;
         if (!$vendor_id) {
             return $this->failed(null, 'Vendor not found', 'Vendor not found', 404);
         }

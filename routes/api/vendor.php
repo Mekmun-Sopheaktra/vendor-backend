@@ -26,7 +26,7 @@ Route::prefix('vendor')->middleware(['auth:sanctum', 'api.vendor'])->group(funct
 
     //products
     Route::post('product/create', [VendorProductController::class, 'store'])->name('api.vendor.product.store');
-    Route::get('products', [VendorProductController::class, 'index'])->name('api.vendor.products');
+    Route::get('product', [VendorProductController::class, 'index'])->name('api.vendor.products');
     Route::get('product/{product}/like', [LikeController::class, 'likeProduct'])->name('api.vendor.product.like');
 
     Route::prefix('compound')->name('api.vendor.compound.')->group(function () {
