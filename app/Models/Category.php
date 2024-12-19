@@ -25,11 +25,11 @@ class Category extends Model
     // Helper
     public function getIconAttribute($value): string
     {
-        if ($value) {
-            return env('APP_URL').'/storage/'.$value;
+        if (!$value) {
+            return '';
         }
 
-        return $value;
+        return env('APP_URL').'/storage/'.$value;
     }
 
     // You can use this code for many-to-many relation
