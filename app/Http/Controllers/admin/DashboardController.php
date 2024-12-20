@@ -32,9 +32,12 @@ class DashboardController extends Controller
         $totalUsers = User::where('is_vendor', 0)->where('is_superuser', 0)->count();
 
         $revenue_per_month = Revenue::query()
-            ->selectRaw('DATE_FORMAT(date, "%M") as month, SUM(revenue) as revenue')
-            ->groupBy('month')
+            ->selectRaw('MONTH(date) as month_number, DATE_FORMAT(date, "%M") as month, SUM(revenue) as revenue')
+            ->groupBy('month_number', 'month')
+            ->orderBy('month_number')
             ->get();
+        //make month name as key and revenue as value
+        $revenue_per_month = $revenue_per_month->pluck('revenue', 'month');
 
         // Stats: Get top 5 products from order_products with count and group by product_id and product_name
         $stats = Product::select('products.id', 'products.title', \DB::raw('SUM(order_products.count) as total'))
