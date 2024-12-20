@@ -60,10 +60,13 @@ class CategoryController extends Controller
             $iconPath = $request->file('icon')->store('icons', 'public'); // Save image in 'storage/app/public/icons'
         }
 
-        // Create a new category with the icon path
+        // Construct the full URL for the icon
+        $fullIconUrl = $iconPath ? asset('storage/' . $iconPath) : null; // Generate full URL if icon exists
+
+        // Create a new category with the icon path (or null if no icon was uploaded)
         $category = Category::create([
             'name' => $request->input('name'),
-            'icon' => $iconPath, // Save the file path in the database
+            'icon' => $fullIconUrl, // Save the full URL path in the database
             'description' => $request->input('description'),
             'parent' => $request->input('parent'),
         ]);
@@ -74,11 +77,9 @@ class CategoryController extends Controller
     //update
     public function update(Request $request, $id)
     {
-        logger($request->all());
-        // Validate the incoming request
         $request->validate([
             'name' => 'required|string|max:255',
-            'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'icon' => 'nullable',
             'description' => 'nullable|string',
             'parent' => 'nullable|string',
         ]);
@@ -89,28 +90,25 @@ class CategoryController extends Controller
             return $this->failed(null, 'Category not found', 404);
         }
 
-        // Initialize $iconPath with the current icon path
         $iconPath = $category->icon;
-
-        // Check if the 'icon' file exists in the request and handle the upload
         if ($request->hasFile('icon')) {
-            // Delete the old icon from storage if it exists (optional, depending on your needs)
+            // Delete the old image if it exists
             if ($iconPath) {
-                Storage::disk('public')->delete($iconPath);  // Delete the old icon from 'storage/app/public/icons'
+                Storage::disk('public')->delete($iconPath);
             }
-
-            // Store the new file and update the icon path
-            $iconPath = $request->file('icon')->store('icons', 'public'); // Save image in 'storage/app/public/icons'
+            // Store the new icon and save the relative path
+            $iconPath = $request->file('icon')->store('icons', 'public');
         }
 
-        // Update the category with the new data
+        // Update the category with the correct icon path
         $category->update([
             'name' => $request->input('name'),
-            'icon' => $iconPath, // Save the file path in the database
+            'icon' => $iconPath, // Store relative path
             'description' => $request->input('description'),
             'parent' => $request->input('parent'),
         ]);
 
+        // Return a success response
         return $this->success($category, 'Category updated successfully');
     }
 

@@ -29,6 +29,10 @@ class Category extends Model
             return '';
         }
 
+        if (strpos($value, 'http') === 0 || strpos($value, 'https') === 0) {
+            return $value;
+        }
+
         return env('APP_URL').'/storage/'.$value;
     }
 
