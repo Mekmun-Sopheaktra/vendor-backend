@@ -17,8 +17,10 @@ class BasketBuyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'shipping_type' => 'required|in:0,1,2,3',
-            'address_id' => 'required',
+            'address' => 'required|string',
+            'transaction_method' => 'required|in:cod,paypal',
+            'transaction_id' => 'required_if:transaction_method,paypal|string',
+            'amount' => 'required_if:transaction_method,paypal|numeric',
         ];
     }
 }

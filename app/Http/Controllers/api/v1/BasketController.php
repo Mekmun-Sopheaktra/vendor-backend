@@ -84,9 +84,9 @@ class BasketController extends Controller
         return $this->success(null, 'success', 'Product added to the basket successfully.');
     }
 
-    public function delete(BasketDeleteRequest $request): JsonResponse
+    public function delete($id): JsonResponse
     {
-        $basketItem = Basket::query()->where('id', $request->product)
+        $basketItem = Basket::query()->where('id', '=', $id)
             ->where('user_id', auth()->user()->id)
             ->first();
 
@@ -116,24 +116,13 @@ class BasketController extends Controller
         auth()->user()->baskets()->where('status', 'created')->update([
             'status' => 'paid',
         ]);
-
-        $method = '';
-        switch ($validated['shipping_type']) {
-            case 0:
-                $method = 'economy';
-            case 1:
-                $method = 'regular';
-            case 2:
-                $method = 'cargo';
-            case 3:
-                $method = 'express';
-        }
-
         $order = Order::query()->create([
             'code' => rand(),
             'user_id' => auth()->user()->id,
-            'address_id' => $validated['address_id'],
-            'method' => $method,
+            "address" => $validated['address'],
+            "transaction_method" => $validated['transaction_method'],
+            "transaction_id" => $validated['transaction_id'],
+            "amount" => $validated['amount'],
         ]);
 
         foreach ($products as $product) {

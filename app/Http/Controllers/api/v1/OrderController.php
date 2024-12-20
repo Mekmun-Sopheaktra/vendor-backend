@@ -27,15 +27,15 @@ class OrderController extends Controller
     protected function getOrdersByStatus()
     {
         return auth()->user()->orders()
-            ->with('products.product', 'address')
+            ->with('products.product')
             ->get()
             ->map(function ($order) {
+                logger($order);
                 return [
                     'code' => $order->code,
                     'products' => $this->mapProducts($order->products),
-                    'shipping_type' => $this->convertShippingType($order->method),
                     'status' => RoleConstants::getStatusFromString($order->status),
-                    'address' => $this->mapAddress($order->address),
+                    'address' => $order->address,
                     'created_at' => $order->created_at,
                 ];
             });

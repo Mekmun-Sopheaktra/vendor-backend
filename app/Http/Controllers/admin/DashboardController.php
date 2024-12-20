@@ -44,11 +44,15 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        //total revenue
+        $totalRevenue = Revenue::sum('revenue');
+
         return $this->success([
-            'totalUsers' => $totalUsers,
+            'total_users' => $totalUsers,
             'total_vendors' => $totalVendors,
             'total_orders' => $totalOrders,
             'total_products' => $totalProducts,
+            'total_revenue' => $totalRevenue,
             'revenue_per_month' => $revenue_per_month,
             'top_products' => $stats
         ]);

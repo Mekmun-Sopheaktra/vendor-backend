@@ -71,7 +71,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::prefix('cart')->group(function () {
         Route::get('', [BasketController::class, 'index'])->name('api.cart');
         Route::post('add', [BasketController::class, 'add'])->name('api.cart.add');
-        Route::post('delete', [BasketController::class, 'delete'])->name('api.cart.delete');
+        Route::delete('{id}', [BasketController::class, 'delete'])->name('api.cart.delete');
         Route::post('buy', [BasketController::class, 'buy'])->name('api.cart.buy');
     });
 

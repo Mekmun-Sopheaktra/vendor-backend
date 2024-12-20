@@ -13,9 +13,13 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            //code
             $table->foreignId('user_id');
-            $table->foreignId('address_id');
-            $table->enum('method', ['economy', 'regular', 'cargo', 'express']);
+            $table->text('address');
+            //transaction method
+            $table->enum('transaction_method', ['cod', 'paypal'])->nullable();
+            $table->string('transaction_id')->nullable();
+            $table->string('amount')->nullable();
             $table->timestamps();
         });
     }
