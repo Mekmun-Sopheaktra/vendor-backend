@@ -74,7 +74,27 @@ class ProductController extends Controller
 
     public function show($id): JsonResponse
     {
-        $product = Product::with(['categories', 'tags', 'galleries' ])->find($id);
+        // Find the product by ID, including related categories, tags, and galleries
+        $product = Product::with(['categories', 'tags', 'galleries'])->find($id);
+
+        // Return an error if the product is not found
+        if (!$product) {
+            return $this->failed(null,'Product not found', 404);
+        }
+
+        // Retrieve related products
+        $relatedProducts = Product::whereHas('categories', function ($query) use ($product) {
+            // Find products in the same categories as the current product
+            $query->whereIn('categories.id', $product->categories->pluck('id'));
+        })
+            ->where('id', '!=', $id) // Exclude the current product
+            ->limit(5) // Limit the number of related products
+            ->get();
+
+        // Add related products to the product response
+        $product->related_products = $relatedProducts;
+
+        // Return the product with related products
         return $this->success($product);
     }
 
@@ -245,7 +265,7 @@ class ProductController extends Controller
     public function latestProducts(Request $request)
     {
         $sortOrder = $request->query('order', 'desc'); // Default to descending
-        $products = Product::orderBy('created_at', $sortOrder)->get();
+        $products = Product::orderBy('created_at', $sortOrder)->limit(5)->get();
 
         return $this->success($products);
     }
@@ -257,7 +277,7 @@ class ProductController extends Controller
 
         // Return an error if the product is not found
         if (!$product) {
-            return $this->error('Product not found', 404);
+            return $this->failed(null.'Product not found', 404);
         }
 
         // Retrieve the related products through the pivot table (category_products)

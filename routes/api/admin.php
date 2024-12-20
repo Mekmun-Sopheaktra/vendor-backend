@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\admin\AdminVendorController;
 use App\Http\Controllers\admin\AuthController as AdminAuthController;
 use App\Http\Controllers\admin\CategoryController;
 use App\Http\Controllers\admin\DashboardController;
@@ -17,12 +18,21 @@ use Illuminate\Support\Facades\Route;
 Route::post('admin/login', [AdminAuthController::class, 'Login'])->name('api.admin.login');
 Route::post('admin/register', [AdminAuthController::class, 'Register'])->name('api.admin.register');
 //createVendor create vendor data and send email to vendor for verification
-Route::post('v1/vendor/{id}/create', [VendorController::class, 'createVendor'])->name('api.vendor.create');
 
 Route::prefix('admin')->middleware(['auth:sanctum', 'api.admin'])->group(function () {
     Route::get('profile', [ProfileController::class, 'index'])->name('api.admin.profile');
     Route::post('profile', [ProfileController::class, 'update'])->name('api.admin.update.profile');
     Route::get('dashboard', [DashboardController::class, 'index'])->name('api.admin.home');
+
+    //list of all vendors
+    Route::prefix('vendor')->group(function () {
+        Route::get('', [AdminVendorController::class, 'index'])->name('api.admin.vendor.index');
+        Route::post('create/{id}', [AdminVendorController::class, 'createVendor'])->name('api.admin.vendor.create');
+        //Show
+        Route::get('{vendor}', [AdminVendorController::class, 'show'])->name('api.admin.vendor.show');
+        //reject
+        Route::post('reject/{vendor}', [AdminVendorController::class, 'reject'])->name('api.admin.vendor.reject');
+    });
 
     Route::prefix('search')->group(function () {
         Route::get('filter', [HomeController::class, 'filter'])->name('api.admin.filter.data');

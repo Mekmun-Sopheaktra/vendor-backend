@@ -13,9 +13,10 @@ class CategoryController extends Controller
 {
     use BaseApiResponse;
 
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::all();
+        $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
+        $categories = Category::paginate($perPage);
         return $this->success($categories);
     }
 
