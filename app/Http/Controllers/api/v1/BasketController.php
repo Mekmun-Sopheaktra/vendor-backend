@@ -19,12 +19,12 @@ class BasketController extends Controller
 
     public function index(): JsonResponse
     {
+        logger('user', [auth()->user()]);
         $baskets = auth()->user()->baskets()
             ->where('status', 'created')
             ->with('product')->get();
 
-        logger($baskets);
-        return $this->success(BasketResource::collection($baskets), 'success', 'Product successfully.');
+        return $this->success(BasketResource::collection($baskets), 'success', 'Cart successfully.');
     }
 
     //all cart for admin
@@ -73,13 +73,19 @@ class BasketController extends Controller
             ->where('user_id', auth()->user()->id)
             ->first();
 
-        if ($basketItem) {
-            $basketItem->delete();
-
-            return $this->success(null, 'success', 'Item removed from the basket.');
+        if (!$basketItem) {
+            return $this->failed(null, 'error', 'Basket item not found or you do not have permission to delete it.');
         }
 
-        return $this->success(null, 'success', 'Basket item not found or you do not have permission to delete it.');
+        $basketItem->delete();
+
+        return $this->success(null, 'success', 'Item removed from the basket.');
+    }
+
+    //checkout with payment
+    public function checkout()
+    {
+
     }
 
     public function buy(BasketBuyRequest $request): JsonResponse

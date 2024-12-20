@@ -18,10 +18,11 @@ class DatabaseSeeder extends Seeder
             CategoriesSeeder::class,
             BannerSeeder::class,
             ProductSeeder::class,
-            # UserSeeder::class,
+//            UserSeeder::class,
             NotificationSeeder::class,
             Tags::class,
             PrioritySeeder::class,
+            RevenueSeeder::class,
         ]);
 
         User::factory()->create([
