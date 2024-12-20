@@ -53,6 +53,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'api.admin'])->group(functio
         Route::get('', [CategoryController::class, 'index'])->name('api.admin.category');
         Route::get('{category}', [CategoryController::class, 'show'])->name('api.admin.category.show');
         Route::post('', [CategoryController::class, 'store'])->name('api.admin.category.add');
+        Route::put('{category}', [CategoryController::class, 'update'])->name('api.admin.category.update');
         Route::delete('delete/{category}', [CategoryController::class, 'destroy'])->name('api.admin.category.delete');
     });
 

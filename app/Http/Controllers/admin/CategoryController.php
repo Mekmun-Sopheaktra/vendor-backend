@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Traits\BaseApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
@@ -68,6 +69,49 @@ class CategoryController extends Controller
         ]);
 
         return $this->success($category, 'Category created successfully');
+    }
+
+    //update
+    public function update(Request $request, $id)
+    {
+        logger($request->all());
+        // Validate the incoming request
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'description' => 'nullable|string',
+            'parent' => 'nullable|string',
+        ]);
+
+        // Find the category to update
+        $category = Category::find($id);
+        if (!$category) {
+            return $this->failed(null, 'Category not found', 404);
+        }
+
+        // Initialize $iconPath with the current icon path
+        $iconPath = $category->icon;
+
+        // Check if the 'icon' file exists in the request and handle the upload
+        if ($request->hasFile('icon')) {
+            // Delete the old icon from storage if it exists (optional, depending on your needs)
+            if ($iconPath) {
+                Storage::disk('public')->delete($iconPath);  // Delete the old icon from 'storage/app/public/icons'
+            }
+
+            // Store the new file and update the icon path
+            $iconPath = $request->file('icon')->store('icons', 'public'); // Save image in 'storage/app/public/icons'
+        }
+
+        // Update the category with the new data
+        $category->update([
+            'name' => $request->input('name'),
+            'icon' => $iconPath, // Save the file path in the database
+            'description' => $request->input('description'),
+            'parent' => $request->input('parent'),
+        ]);
+
+        return $this->success($category, 'Category updated successfully');
     }
 
     // Delete a category
