@@ -41,6 +41,12 @@ Route::get('v1/home', [HomeController::class, 'index'])->name('api.home');
 //product routes
 Route::get('v1/product/all', [ProductController::class, 'index'])->name('api.product');
 Route::get('v1/product/{product}', [ProductController::class, 'show'])->name('api.product.show');
+Route::prefix('v1/category')->group(function () {
+    Route::get('', [CategoryController::class, 'index'])->name('api.category');
+    Route::get('{category}', [CategoryController::class, 'show'])->name('api.category.show');
+    Route::get('{categoryId}/highlight-products', [CategoryController::class, 'highlightProducts']); // Highlighted products based on tag
+    Route::get('{categoryId}/products', [CategoryController::class, 'listProductsInCategory']); // List products in a category
+});
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('me', [AuthController::class, 'me'])->name('api.me');
@@ -54,12 +60,6 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     });
 
     //category routes
-    Route::prefix('category')->group(function () {
-        Route::get('', [CategoryController::class, 'index'])->name('api.category');
-        Route::get('{category}', [CategoryController::class, 'show'])->name('api.category.show');
-        Route::get('{categoryId}/highlight-products', [CategoryController::class, 'highlightProducts']); // Highlighted products based on tag
-        Route::get('{categoryId}/products', [CategoryController::class, 'listProductsInCategory']); // List products in a category
-    });
 
 
     Route::prefix('product')->group(function () {
