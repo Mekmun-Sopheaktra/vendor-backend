@@ -19,12 +19,29 @@ class BasketController extends Controller
 
     public function index(): JsonResponse
     {
-        logger('user', [auth()->user()]);
+        $delivery_fee = 2.5;
         $baskets = auth()->user()->baskets()
             ->where('status', 'created')
             ->with('product')->get();
 
-        return $this->success(BasketResource::collection($baskets), 'success', 'Cart successfully.');
+        // Calculate the total cart value
+        $subtotal = $baskets->sum(function ($basket) {
+            return $basket->product->price * $basket->count;
+        });
+
+        return response()->json([
+            'data' => BasketResource::collection($baskets),
+            'summary' => [
+                'subtotal' => $subtotal,
+                'delivery_fee' => $delivery_fee,
+                'total' => $subtotal + $delivery_fee
+            ],
+            'status' => true,
+            'alert' => [
+                'title' => 'success',
+                'message' => 'Cart successfully.'
+            ]
+        ]);
     }
 
     //all cart for admin
