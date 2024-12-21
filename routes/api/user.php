@@ -16,8 +16,7 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\WebAuthController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('v1/auth/google/redirect', [GoogleController::class, 'redirectToGoogle']);
-Route::get('v1/auth/callback/google', [GoogleController::class, 'handleGoogleCallback']);
+Route::get('v1/auth/callback/google', [GoogleController::class, 'handleGoogleCode']);
 
 Route::prefix('v1')->group(function () {
     Route::post('login', [AuthController::class, 'Login'])->name('api.login');

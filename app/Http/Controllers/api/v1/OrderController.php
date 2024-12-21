@@ -30,13 +30,13 @@ class OrderController extends Controller
             ->with('products.product')
             ->get()
             ->map(function ($order) {
-                logger($order);
                 return [
                     'code' => $order->code,
                     'products' => $this->mapProducts($order->products),
                     'status' => RoleConstants::getStatusFromString($order->status),
                     'address' => $order->address,
                     'created_at' => $order->created_at,
+                    'amount' => $order->amount,
                 ];
             });
     }
