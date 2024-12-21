@@ -36,7 +36,6 @@ class VendorController extends Controller
             'email' => 'required|email|max:255|unique:vendors,email',
         ]);
 
-        logger($validatedData);
         $validatedData['slug'] = $validatedData['slug'] ?? Str::slug($validatedData['name']);
         $validatedData['status'] = false;
 

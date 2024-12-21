@@ -145,7 +145,6 @@ class ProductController extends Controller
             $validatedData['image'] = $imagePath;
         }
 
-        logger($validatedData);
 
         // Create the product with the validated data
         $product = Product::create($validatedData);
