@@ -34,7 +34,7 @@ class OrderConstants
             case self::FAILED:
                 return 2;
             default:
-                return self::ACTIVE;
+                return self::SUCCESS;
         }
     }
 }
