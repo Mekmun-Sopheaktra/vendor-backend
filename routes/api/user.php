@@ -12,8 +12,12 @@ use App\Http\Controllers\api\v1\OrderController;
 use App\Http\Controllers\api\v1\ProductController;
 use App\Http\Controllers\api\v1\ProfileController;
 use App\Http\Controllers\api\v1\VendorController;
+use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\WebAuthController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('v1/auth/google/redirect', [GoogleController::class, 'redirectToGoogle']);
+Route::get('v1/auth/callback/google', [GoogleController::class, 'handleGoogleCallback']);
 
 Route::prefix('v1')->group(function () {
     Route::post('login', [AuthController::class, 'Login'])->name('api.login');
