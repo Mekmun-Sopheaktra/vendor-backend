@@ -27,11 +27,12 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'api.admin'])->group(functio
     //list of all vendors
     Route::prefix('vendor')->group(function () {
         Route::get('', [AdminVendorController::class, 'index'])->name('api.admin.vendor.index');
-        Route::post('create/{id}', [AdminVendorController::class, 'createVendor'])->name('api.admin.vendor.create');
         //Show
         Route::get('{vendor}', [AdminVendorController::class, 'show'])->name('api.admin.vendor.show');
+        Route::post('approve/{vendor}', [AdminVendorController::class, 'createVendor'])->name('api.admin.vendor.create');
         //reject
         Route::post('reject/{vendor}', [AdminVendorController::class, 'reject'])->name('api.admin.vendor.reject');
+        //show vendor details
     });
 
     Route::prefix('search')->group(function () {
