@@ -38,11 +38,12 @@ class CompoundController extends Controller
     public function store(Request $request)
     {
         DB::beginTransaction();
+        $userId = auth()->user()->id;
+        $vendorId = auth()->user()->vendor->id;
 
         try {
             // Validate the incoming data
             $validatedData = $request->validate([
-                'brand_id' => 'required|string',
                 'title' => 'required|string|max:255',
                 'slug' => 'required|string|max:255|unique:products,slug',
                 'description' => 'nullable|string',
@@ -58,15 +59,12 @@ class CompoundController extends Controller
                 'priority' => 'nullable|string',
                 'compound_products' => 'required|array',  // Compound products must be an array
                 'compound_products.*.product_id' => 'required|integer|exists:products,id',  // Ensure product_id is valid
-                'compound_products.*.inventory' => 'required|integer',  // Ensure inventory is valid
             ]);
-
-            $userId = auth()->id();
 
             // Step 2: Create the product record first and get product_id
             $product = Product::create([
                 'user_id' => $userId, // Use authenticated user's ID
-                'brand_id' => $validatedData['brand_id'],
+                'vendor_id' => $vendorId, // Use authenticated user's ID
                 'title' => $validatedData['title'],
                 'slug' => $validatedData['slug'],
                 'description' => $validatedData['description'],
@@ -86,16 +84,28 @@ class CompoundController extends Controller
             // Step 3: Create the compound record using the created product_id
             $compound = Compound::create([
                 'user_id' => $userId, // Use authenticated user's ID
+                'vendor_id' => $vendorId, // Use authenticated user's ID
                 'title' => $validatedData['title'],
                 'description' => $validatedData['description'],
                 'price' => $validatedData['price'],
                 'product_id' => $product->id, // Reference to the created product
             ]);
 
-            // Step 4: Store data in the compound_products table
+            // Step 4: Validate and store data in the compound_products table
             $syncData = [];
+
+            // Fetch all product IDs belonging to the current vendor
+            $vendorProducts = Product::where('vendor_id', $vendorId)->pluck('id')->toArray();
+
+            // Check that each product_id in compound_products belongs to the vendor
             foreach ($validatedData['compound_products'] as $productData) {
-                $syncData[$productData['product_id']] = ['inventory' => $productData['inventory']];
+                if (!in_array($productData['product_id'], $vendorProducts)) {
+                    $product = Product::find($productData['product_id']);
+                    throw new \Exception("Product ID {$product->title} does not belong to the vendor.");
+                }
+
+                // Remove inventory from sync data
+                $syncData[$productData['product_id']] = [];
             }
 
             // Attach products to the compound using the compound_products pivot table
@@ -104,7 +114,6 @@ class CompoundController extends Controller
             DB::commit(); // Commit the transaction
 
             return $this->success($compound->load('products'), 'Compound created successfully');
-
         } catch (\Exception $e) {
             DB::rollBack(); // Rollback the transaction in case of failure
             return $this->failed(null, 'Error', $e->getMessage());
@@ -115,10 +124,12 @@ class CompoundController extends Controller
     public function show($id)
     {
         try {
+            $vendorId = auth()->user()->vendor->id;
+
             // Fetch the compound record that matches the ID and belongs to the authenticated user
             $compound = Compound::with('products')
                 ->where('id', $id)
-                ->where('user_id', auth()->id()) // Filter by the authenticated user's ID
+                ->where('vendor_id', $vendorId) // Filter by the authenticated user's ID
                 ->first();
 
             if (!$compound) {
@@ -136,7 +147,10 @@ class CompoundController extends Controller
     {
         DB::beginTransaction();  // Start a database transaction
         try {
-            // Find the compound by ID
+            $userId = auth()->user()->id;
+            $vendorId = auth()->user()->vendor->id;
+
+            // Find the compound by ID and ensure it belongs to the authenticated user
             $compound = Compound::where('id', $id)
                 ->where('user_id', auth()->id())
                 ->first();
@@ -145,17 +159,12 @@ class CompoundController extends Controller
                 return $this->failed(null, 'Error', 'Compound not found');
             }
 
-            // Find the product associated with the compound
             $product = Product::find($compound->product_id);
-            if (!$product) {
-                return $this->failed(null, 'Error', 'Associated product not found');
-            }
 
             // Validate the incoming data for compound fields
             $validatedData = $request->validate([
-                'brand_id' => 'nullable|string',
                 'title' => 'nullable|string|max:255',
-                'slug' => 'nullable|string|max:255' . $compound->id,
+                'slug' => 'nullable|string|max:255|unique:products,slug,' . $compound->product_id,  // Ensure unique slug but ignore current product slug
                 'description' => 'nullable|string',
                 'price' => 'nullable|numeric',
                 'image' => 'nullable|string',
@@ -169,7 +178,6 @@ class CompoundController extends Controller
                 'priority' => 'nullable|string',
                 'compound_products' => 'nullable|array',  // compound_products is optional
                 'compound_products.*.product_id' => 'required|integer|exists:products,id',  // Validating product_id
-                'compound_products.*.inventory' => 'required|integer|min:0',  // Validating inventory
             ]);
 
             // Update the compound itself
@@ -183,12 +191,21 @@ class CompoundController extends Controller
                 $compoundProductsData = $validatedData['compound_products'];
 
                 $syncData = [];
-                foreach ($compoundProductsData as $productData) {
-                    // Prepare data for syncing
-                    $syncData[$productData['product_id']] = ['inventory' => $productData['inventory']];
+                // Fetch vendor products for validation
+                $vendorProducts = Product::where('vendor_id', $vendorId)->pluck('id')->toArray();
+
+                // Check that each product_id in compound_products belongs to the vendor
+                foreach ($validatedData['compound_products'] as $productData) {
+                    if (!in_array($productData['product_id'], $vendorProducts)) {
+                        $product = Product::find($productData['product_id']);
+                        throw new \Exception("Product ID {$product->title} does not belong to the vendor.");
+                    }
+
+                    // Remove inventory handling, no longer syncing inventory
+                    $syncData[$productData['product_id']] = [];
                 }
 
-                // Sync the products and their inventory with the compound
+                // Sync the products with the compound
                 $compound->products()->sync($syncData);
             }
 
@@ -208,9 +225,11 @@ class CompoundController extends Controller
         DB::beginTransaction(); // Start a transaction
 
         try {
+            $vendorId = auth()->user()->vendor->id;
+
             // Find the compound by ID
             $compound = Compound::where('id', $id)
-                ->where('user_id', auth()->id())
+                ->where('vendor_id', $vendorId)
                 ->first();
 
             if (!$compound) {

@@ -20,7 +20,7 @@ class ProfileController extends Controller
             'email' => auth()->user()->email,
             'mobile' => auth()->user()->mobile,
             'name' => auth()->user()->name,
-            'profile_url' => secure_asset('storage/'.auth()->user()->profile_photo_path) ?? config('image.avatar_url'),
+            'profile_url' => secure_asset('storage/'.auth()->user()->image) ?? config('image.avatar_url'),
             'age' => auth()->user()->age ?? 0,
         ]);
     }
@@ -31,8 +31,9 @@ class ProfileController extends Controller
         $user->name = $request->name;
         $user->age = $request->age;
         $user->mobile = $request->mobile;
+        //store image
         if ($request->hasFile('image')) {
-            $user->image = $request->file('image') ? storeUploadedFile($request->file('image'), 'upload') : '';
+            $user->profile_photo_path = $request->file('image')->store('image', 'public');
         }
         $user->save();
 

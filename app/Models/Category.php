@@ -15,6 +15,7 @@ class Category extends Model
         'name',
         'icon',
         'parent',
+        'slug'
     ];
 
     public function child(): HasMany

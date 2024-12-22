@@ -11,6 +11,7 @@ class Order extends Model
 
     protected $fillable = [
         'code',
+        'vendor_id',
         'user_id',
         'address',
         'transaction_method',
@@ -32,5 +33,11 @@ class Order extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    //vendor
+    public function vendor()
+    {
+        return $this->belongsTo(Vendor::class);
     }
 }

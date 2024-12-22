@@ -25,6 +25,16 @@ class ProductController extends Controller
         $validatedData = $request->validated();
         $productsQuery = Product::query();
 
+        //title
+        if (!empty($validatedData['title'])) {
+            $productsQuery->where('title', 'like', '%' . $validatedData['title'] . '%');
+        }
+
+        //volume
+        if (!empty($validatedData['volume'])) {
+            $productsQuery->where('volume', 'like', '%' . $validatedData['volume'] . '%');
+        }
+
         // Apply category filter
         if (!empty($validatedData['categories_id'])) {
             $productsQuery->whereIn('id', explode(',', $validatedData['categories_id']));

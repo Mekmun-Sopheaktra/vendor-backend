@@ -32,4 +32,14 @@ class Vendor extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    public function compounds()
+    {
+        return $this->hasMany(Compound::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

@@ -13,7 +13,6 @@ class Product extends Model
     protected $fillable = [
         'user_id',
         'vendor_id',
-        'brand_id',
         'title',
         'slug',
         'description',
@@ -80,5 +79,11 @@ class Product extends Model
     public function orders()
     {
         return $this->hasMany(OrderProduct::class);
+    }
+
+    //get image attribute
+    public function getImageAttribute($value)
+    {
+        return asset('storage/' . $value);
     }
 }

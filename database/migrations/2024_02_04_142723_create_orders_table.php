@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             //code
             $table->foreignId('user_id');
+            $table->foreignId('vendor_id');
+
             $table->text('address');
             //transaction method
             $table->enum('transaction_method', ['cod', 'paypal'])->nullable();

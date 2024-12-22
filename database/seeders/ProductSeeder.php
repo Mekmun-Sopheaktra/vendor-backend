@@ -20,7 +20,6 @@ class ProductSeeder extends Seeder
         $products = [
             [
                 'user_id' => 1,
-                'brand_id' => 'MANGOPOP',
                 'title' => 'MANGOPOP Women\'s Mock Turtle Neck Slim Fit Long Half Short Sleeve T Shirt Tight Tops Tee',
                 'slug' => 'mangopop-women-mock',
                 'description' => 'MANGOPOP Women\'s Mock Turtle Neck Slim Fit Long Half Short Sleeve T Shirt Tight Tops Tee',
@@ -41,7 +40,6 @@ class ProductSeeder extends Seeder
             ],
             [
                 'user_id' => 1,
-                'brand_id' => 'Amazfit',
                 'title' => 'Amazfit Band 5 Activity Fitness Tracker',
                 'slug' => 'amazfit-band-5-activity-fitness-tracker',
                 'description' => 'Amazfit Band 5 Activity Fitness Tracker with Alexa Built-in, 15-Day Battery Life, Blood Oxygen, Heart Rate, Sleep & Stress Monitoring, 5 ATM Water Resistant, Fitness Watch for Men Women Kids, Black',
@@ -62,7 +60,6 @@ class ProductSeeder extends Seeder
             ],
             [
                 'user_id' => 1,
-                'brand_id' => 'Alpine',
                 'title' => 'Alpine Corporation Weather-resistant Bluetooth Solar-Powered Outdoor Wireless Rock Speaker – Set of 2, Brown',
                 'slug' => 'alpine-corporation-weather-resistant',
                 'description' => 'Alpine Corporation Weather-resistant Bluetooth Solar-Powered Outdoor Wireless Rock Speaker – Set of 2, Brown',
@@ -83,7 +80,6 @@ class ProductSeeder extends Seeder
             ],
             [
                 'user_id' => 1,
-                'brand_id' => 'Nike',
                 'title' => 'Nike model-934',
                 'slug' => 'nike-model-934',
                 'description' => 'Nike model-934',
@@ -104,7 +100,6 @@ class ProductSeeder extends Seeder
             ],
             [
                 'user_id' => 1,
-                'brand_id' => 'Nike',
                 'title' => 'Nike model-934 (Different Color)',
                 'slug' => 'nike-model-934-color-2',
                 'description' => 'Nike model-934 (Different Color)',
@@ -125,7 +120,6 @@ class ProductSeeder extends Seeder
             ],
             [
                 'user_id' => 1,
-                'brand_id' => 'Nike',
                 'title' => 'Nike model-934 (Another Variant)',
                 'slug' => 'nike-model-934-color-3',
                 'description' => 'Nike model-934 (Another Variant)',
@@ -146,7 +140,6 @@ class ProductSeeder extends Seeder
             ],
             [
                 'user_id' => 1,
-                'brand_id' => 'Generic',
                 'title' => 'Shirt model-131',
                 'slug' => 'shirt-model-131',
                 'description' => 'Shirt model-131',

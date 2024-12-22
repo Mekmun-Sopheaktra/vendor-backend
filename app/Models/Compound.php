@@ -10,7 +10,7 @@ class Compound extends Model
     use HasFactory;
 
      protected $table = 'compounds';
-    protected $fillable = ['user_id', 'product_id', 'title', 'price', 'description'];
+    protected $fillable = ['user_id','vendor_id', 'product_id', 'title', 'price', 'description'];
     protected $with = ['products'];
 
     public function products()
@@ -18,5 +18,10 @@ class Compound extends Model
         return $this->belongsToMany(Product::class, 'compound_products')
             ->withPivot('inventory')
             ->withTimestamps();
+    }
+
+    public function vendor()
+    {
+        return $this->belongsTo(Vendor::class);
     }
 }

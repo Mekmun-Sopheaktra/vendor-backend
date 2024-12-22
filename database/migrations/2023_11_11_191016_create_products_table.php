@@ -15,9 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id');
             $table->foreignId('vendor_id')->nullable();
-            $table->string("brand_id");
             $table->string('title');
-            $table->string('slug');
+            $table->string('slug')->unique();
             $table->text('description');
             $table->integer('price');
             $table->string('image')->nullable();

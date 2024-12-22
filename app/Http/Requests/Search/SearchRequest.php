@@ -22,6 +22,8 @@ class SearchRequest extends FormRequest
             'categories_id' => 'nullable|regex:/^(\d+,)*\d+$/',
             'sort' => 'nullable|in:0,1,2,3',
             'page' => 'nullable|numeric|min:1',
+            'title' => 'nullable|string|max:255',
+            'volume' => 'nullable|string|max:255',
         ];
     }
 }

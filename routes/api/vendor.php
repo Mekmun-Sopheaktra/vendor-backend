@@ -3,11 +3,11 @@
 use App\Http\Controllers\api\v1\BasketController;
 use App\Http\Controllers\api\v1\CommentController;
 use App\Http\Controllers\api\v1\CompoundController;
-use App\Http\Controllers\api\v1\HomeController;
 use App\Http\Controllers\api\v1\LikeController;
 use App\Http\Controllers\api\v1\NotificationController;
 use App\Http\Controllers\api\v1\ProfileController;
 use App\Http\Controllers\vendor\VendorAuthController;
+use App\Http\Controllers\vendor\VendorDashboardController;
 use App\Http\Controllers\vendor\VendorOrderController;
 use App\Http\Controllers\vendor\VendorProductController;
 use Illuminate\Support\Facades\Route;
@@ -17,17 +17,23 @@ Route::post('vendor/login', [VendorAuthController::class, 'Login'])->name('api.v
 Route::prefix('vendor')->middleware(['auth:sanctum', 'api.vendor'])->group(function () {
     Route::get('profile', [ProfileController::class, 'index'])->name('api.vendor.profile');
     Route::post('profile', [ProfileController::class, 'update'])->name('api.vendor.update.profile');
-    Route::get('home', [HomeController::class, 'index'])->name('api.vendor.home');
+    Route::get('dashboard', [VendorDashboardController::class, 'index'])->name('api.vendor.home');
 
     Route::prefix('search')->group(function () {
-        Route::get('filter', [HomeController::class, 'filter'])->name('api.vendor.filter.data');
-        Route::get('', [HomeController::class, 'search'])->name('api.vendor.search.data');
+        Route::get('filter', [VendorDashboardController::class, 'filter'])->name('api.vendor.filter.data');
+        Route::get('', [VendorDashboardController::class, 'search'])->name('api.vendor.search.data');
     });
+    Route::get('product/options', [VendorProductController::class, 'getOptions'])->name('api.vendor.product.options');
 
     //products
     Route::post('product/create', [VendorProductController::class, 'store'])->name('api.vendor.product.store');
     Route::get('product', [VendorProductController::class, 'index'])->name('api.vendor.products');
-    Route::get('product/{product}/like', [LikeController::class, 'likeProduct'])->name('api.vendor.product.like');
+    Route::get('product/{product}', [VendorProductController::class, 'show'])->name('api.vendor.product.show');
+    //delete product
+    Route::delete('product/{product}', [VendorProductController::class, 'destroy'])->name('api.vendor.product.delete');
+    Route::post('product/update/{product}', [VendorProductController::class, 'update'])->name('api.vendor.product.update');
+
+    //get product options
 
     Route::prefix('compound')->name('api.vendor.compound.')->group(function () {
         // List compounds
