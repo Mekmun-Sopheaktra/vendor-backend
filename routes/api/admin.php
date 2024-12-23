@@ -22,6 +22,7 @@ Route::post('admin/register', [AdminAuthController::class, 'Register'])->name('a
 Route::prefix('admin')->middleware(['auth:sanctum', 'api.admin'])->group(function () {
     Route::get('profile', [ProfileController::class, 'index'])->name('api.admin.profile');
     Route::post('profile', [ProfileController::class, 'update'])->name('api.admin.update.profile');
+    Route::post('logout', [AdminAuthController::class, 'Logout'])->name('api.admin.logout');
     Route::get('dashboard', [DashboardController::class, 'index'])->name('api.admin.home');
 
     //list of all vendors

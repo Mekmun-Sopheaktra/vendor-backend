@@ -67,4 +67,16 @@ class AuthController extends Controller
             return $this->failed($exception->getMessage(), 'Error', 'Error from server');
         }
     }
+
+    //Logout
+    public function Logout(): JsonResponse
+    {
+        try {
+            auth()->user()->tokens()->delete();
+
+            return $this->success(null, 'Logout', 'Logout successful', 204);
+        } catch (Exception $exception) {
+            return $this->failed($exception->getMessage(), 'Error', 'Error from server');
+        }
+    }
 }
