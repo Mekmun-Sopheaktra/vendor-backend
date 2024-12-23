@@ -19,10 +19,11 @@ Route::post('admin/login', [AdminAuthController::class, 'Login'])->name('api.adm
 Route::post('admin/register', [AdminAuthController::class, 'Register'])->name('api.admin.register');
 //createVendor create vendor data and send email to vendor for verification
 
+
 Route::prefix('admin')->middleware(['auth:sanctum', 'api.admin'])->group(function () {
+    Route::post('logout', [AdminAuthController::class, 'logout'])->name('api.admin.logout');
     Route::get('profile', [ProfileController::class, 'index'])->name('api.admin.profile');
     Route::post('profile', [ProfileController::class, 'update'])->name('api.admin.update.profile');
-    Route::post('logout', [AdminAuthController::class, 'Logout'])->name('api.admin.logout');
     Route::get('dashboard', [DashboardController::class, 'index'])->name('api.admin.home');
 
     //list of all vendors

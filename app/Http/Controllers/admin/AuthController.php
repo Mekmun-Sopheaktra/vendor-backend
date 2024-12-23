@@ -69,12 +69,14 @@ class AuthController extends Controller
     }
 
     //Logout
-    public function Logout(): JsonResponse
+    public function logout(): JsonResponse
     {
         try {
-            auth()->user()->tokens()->delete();
+            auth()->user()->tokens->each(function ($token) {
+                $token->delete();
+            });
 
-            return $this->success(null, 'Logout', 'Logout successful', 204);
+            return $this->success(null, 'Logout', 'Logout successful');
         } catch (Exception $exception) {
             return $this->failed($exception->getMessage(), 'Error', 'Error from server');
         }
