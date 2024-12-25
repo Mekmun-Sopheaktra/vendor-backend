@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('banner')->nullable();
             $table->string('status')->default(VendorStatusConstants::PENDING);
             $table->string('purpose')->nullable();
+            $table->string('paypal_client_id')->nullable();
             $table->timestamps();
         });
     }

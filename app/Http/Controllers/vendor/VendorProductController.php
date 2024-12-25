@@ -23,8 +23,11 @@ class VendorProductController extends Controller
         if (!$vendor_id) {
             return $this->failed(null, 'Vendor not found', 'Vendor not found', 404);
         }
+        //search
+        $search = request()->query('search');
         $products = Product::query()
             ->where('vendor_id', $vendor_id)
+            ->where('title', 'like', '%' . $search . '%')
             ->paginate(10);
 
         return $this->success($products, 'Products retrieved successfully');
@@ -45,7 +48,7 @@ class VendorProductController extends Controller
         try {
             $validatedData = $request->validate([
                 'title' => 'required|string|max:255',
-                'slug' => 'required|string|max:255',
+                'slug' => 'required|string|max:255|unique:products',
                 'description' => 'nullable',
                 'price' => 'required',
                 'image' => 'nullable', // Validate image type and size
@@ -60,6 +63,16 @@ class VendorProductController extends Controller
                 'discount' => 'nullable',
                 'priority' => 'nullable',
             ]);
+
+            //check if title and slug is unique
+            $product = Product::query()
+                ->where('title', $validatedData['title'])
+                ->orWhere('slug', $validatedData['slug'])
+                ->first();
+
+            if ($product) {
+                return $this->failed(null, 'Product Title already exists', 'Product Title already exists', 409);
+            }
 
             // Handle image upload
             if ($request->hasFile('image')) {

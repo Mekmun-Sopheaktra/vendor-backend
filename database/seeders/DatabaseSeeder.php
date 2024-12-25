@@ -42,6 +42,14 @@ class DatabaseSeeder extends Seeder
             'is_vendor' => 1,
         ]);
 
+        User::factory()->create([
+            'name' => 'second_vendor',
+            'email' => 'second_vendor@shop.com',
+            'password' => 'vendor_vendor',
+            'is_superuser' => 0,
+            'is_vendor' => 1,
+        ]);
+
         //create vendor
         Vendor::factory()->create([
             'user_id' => 2,
@@ -53,6 +61,19 @@ class DatabaseSeeder extends Seeder
             'logo' => 'vendor logo',
             'banner' => 'vendor banner',
             'email' => 'vendor@shop.com',
+            'status' => 'active',
+        ]);
+
+        Vendor::factory()->create([
+            'user_id' => 3,
+            'name' => 'second_vendor',
+            'slug' => 'vendor-2',
+            'description' => 'vendor description',
+            'address' => 'vendor address',
+            'purpose' => 'vendor purpose',
+            'logo' => 'vendor logo',
+            'banner' => 'vendor banner',
+            'email' => 'second_vendor@shop.com',
             'status' => 'active',
         ]);
     }

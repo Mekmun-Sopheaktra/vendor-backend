@@ -20,7 +20,8 @@ class Vendor extends Model
         'logo',
         'email',
         'banner',
-        'status'
+        'status',
+        'paypal_client_id'
     ];
 
     public function user()

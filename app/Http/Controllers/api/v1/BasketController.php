@@ -4,14 +4,16 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Basket\BasketBuyRequest;
-use App\Http\Requests\Basket\BasketDeleteRequest;
 use App\Http\Requests\Basket\BasketRequest;
 use App\Http\Resources\Basket\BasketResource;
 use App\Models\Basket;
 use App\Models\Order;
 use App\Models\OrderProduct;
+use App\Models\Product;
+use App\Models\Vendor;
 use App\Traits\BaseApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class BasketController extends Controller
 {
@@ -24,22 +26,35 @@ class BasketController extends Controller
             ->where('status', 'created')
             ->with('product')->get();
 
+        // Group baskets by vendor
+        $groupedBaskets = $baskets->groupBy(function ($basket) {
+            return $basket->product->vendor_id;
+        });
+
         // Calculate the total cart value
         $subtotal = $baskets->sum(function ($basket) {
             return $basket->product->price * $basket->count;
         });
 
+        // Transform grouped data
+        $groupedData = $groupedBaskets->map(function ($baskets, $vendorId) {
+            return [
+                'vendor' => Vendor::query()->find($vendorId),
+                'products' => BasketResource::collection($baskets),
+            ];
+        })->values(); // Reset keys for cleaner JSON output
+
         return response()->json([
-            'data' => BasketResource::collection($baskets),
+            'data' => $groupedData,
             'summary' => [
                 'subtotal' => $subtotal,
                 'delivery_fee' => $delivery_fee,
-                'total' => $subtotal + $delivery_fee
+                'total' => $subtotal ? $subtotal + $delivery_fee : 0,
             ],
             'status' => true,
             'alert' => [
                 'title' => 'success',
-                'message' => 'Cart successfully.'
+                'message' => 'Cart grouped by vendor successfully.'
             ]
         ]);
     }
@@ -99,10 +114,33 @@ class BasketController extends Controller
         return $this->success(null, 'success', 'Item removed from the basket.');
     }
 
-    //checkout with payment
-    public function checkout()
+    //checkout
+    public function checkout(Request $request)
     {
+        $products_id = $request->input('products_id');
 
+        // Validate input
+        if (empty($products_id) || !is_array($products_id)) {
+            return $this->failed(null, 'error', 'Invalid products_id input.');
+        }
+
+        // Check if all products belong to the same vendor
+        $vendors = Product::query()
+            ->whereIn('id', $products_id)
+            ->pluck('vendor_id')
+            ->toArray();
+
+        if (count(array_unique($vendors)) > 1) {
+            return $this->failed(null, 'error', 'You can only checkout products from the same vendor.');
+        }
+
+        // Calculate total price
+        $total = Basket::query()
+            ->whereIn('id', $products_id)
+            ->get();
+
+        // Return success response
+        return $this->success($total, 'Success', 'Checkout successful');
     }
 
     public function buy(BasketBuyRequest $request): JsonResponse
