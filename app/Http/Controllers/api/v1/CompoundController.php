@@ -187,6 +187,16 @@ class CompoundController extends Controller
                 'compound_products.*.product_id' => 'required|integer|exists:products,id',  // Validating product_id
             ]);
 
+            //check if duplicate product_code and slug
+            if ($validatedData['product_code'] && Product::where('product_code', $validatedData['product_code'])->where('id', '!=', $compound->product_id)->exists()) {
+                return $this->failed(null, 'Error', 'Product code already exists');
+            }
+
+            //slug
+            if ($validatedData['slug'] && Product::where('slug', $validatedData['slug'])->where('id', '!=', $compound->product_id)->exists()) {
+                return $this->failed(null, 'Error', 'Slug already exists');
+            }
+
             // Update the compound itself
             $compound->update($validatedData);
 
