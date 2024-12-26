@@ -18,7 +18,7 @@ class CompoundController extends Controller
     {
         try {
             $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
-            $userId = auth()->id(); // Assuming user_id is passed as a query parameter
+            $userId = auth()->user()->id;
 
             if (!$userId) {
                 return $this->failed(null, 'User ID is required', 400);

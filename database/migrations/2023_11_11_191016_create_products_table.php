@@ -31,6 +31,8 @@ return new class extends Migration
             $table->boolean('is_compound_product')->default(false);
             $table->integer('discount')->default(0); // Discount percentage or value
             $table->string('priority')->nullable(); // Priority for sorting discounts
+            $table->boolean('status')->default(true);
+            $table->foreignId('category_id')->nullable();
             $table->timestamps();
         });
     }

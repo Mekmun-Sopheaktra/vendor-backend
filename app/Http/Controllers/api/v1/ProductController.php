@@ -23,7 +23,7 @@ class ProductController extends Controller
     public function index(SearchRequest $request): JsonResponse
     {
         $validatedData = $request->validated();
-        $productsQuery = Product::query();
+        $productsQuery = Product::query()->where('status', true);
 
         //title
         if (!empty($validatedData['title'])) {
@@ -85,7 +85,7 @@ class ProductController extends Controller
     public function show($id): JsonResponse
     {
         // Find the product by ID, including related categories, tags, and galleries
-        $product = Product::with(['categories', 'tags', 'galleries'])->find($id);
+        $product = Product::with(['categories', 'tags', 'galleries'])->where('status', true)->find($id);
 
         // Return an error if the product is not found
         if (!$product) {
@@ -274,28 +274,25 @@ class ProductController extends Controller
     public function latestProducts(Request $request)
     {
         $sortOrder = $request->query('order', 'desc'); // Default to descending
-        $products = Product::orderBy('created_at', $sortOrder)->limit(5)->get();
+        $products = Product::orderBy('created_at', $sortOrder)->where('status', true)->limit(5)->get();
 
         return $this->success($products);
     }
 
     public function relatedProducts($id)
     {
-        // Find the product by ID
-        $product = Product::find($id);
+        // Find the product by ID and ensure its status is true
+        $product = Product::where('id', $id)->where('status', true)->first();
 
         // Return an error if the product is not found
         if (!$product) {
-            return $this->failed(null.'Product not found', 404);
+            return $this->failed('Product not found', 404);
         }
 
         // Retrieve the related products through the pivot table (category_products)
-        $relatedProducts = Product::whereHas('categories', function ($query) use ($product) {
-            // Find products in the same categories as the current product
-            $query->whereIn('categories.id', $product->categories->pluck('id'));
-        })
+        $relatedProducts = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $id) // Exclude the current product
-            ->limit(5) // Limit the number of related products to return
+            ->limit(5) // Limit the number of related products
             ->get();
 
         // Return the related products in the response
@@ -305,6 +302,7 @@ class ProductController extends Controller
     public function discountedProducts()
     {
         $discountedProducts = Product::where('discount', '>', 0) // Products with discounts
+        ->where('status', true)
         ->orderBy('priority', 'desc') // Sort by priority
         ->get();
 
@@ -321,7 +319,7 @@ class ProductController extends Controller
         $perPage = $request->query('per_page', 10); // Default to 10 items per page
 
         // Initialize query
-        $query = Product::query()->orderBy('priority', 'desc');
+        $query = Product::query()->where('status', true)->orderBy('priority', 'desc');
 
         // Filter by min and max price
         if ($minPrice) {
@@ -359,6 +357,7 @@ class ProductController extends Controller
         ->leftJoin('priority', 'products.priority', '=', 'priority.name') // Join with the priority table
         ->orderByRaw("CASE WHEN priority.name = '" . ProductPriority::NEW_ARRIVAL . "' THEN 0 ELSE 1 END") // Prioritize NEW_ARRIVAL
         ->orderBy('created_at', 'desc') // Fallback order by creation date
+        ->where('status', true)
         ->paginate($perPage);
 
         return $this->success($newArrivalProducts);

@@ -28,7 +28,9 @@ class Product extends Model
         'view_count',
         'is_compound_product',
         'discount',
-        'priority'
+        'priority',
+        'category_id',
+        'status',
     ];
 
     // You can use this code for many-to-many relation

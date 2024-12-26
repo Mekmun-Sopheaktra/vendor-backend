@@ -36,6 +36,7 @@ class ProductSeeder extends Seeder
                 'view_count' => 300,
                 'discount' => 0,
                 'priority' => 'hot',
+                'category_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -57,6 +58,7 @@ class ProductSeeder extends Seeder
                 'view_count' => 40,
                 'discount' => 10, // 10% discount
                 'priority' => 'recommended',
+                'category_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -78,6 +80,7 @@ class ProductSeeder extends Seeder
                 'view_count' => 40,
                 'discount' => 15, // 15% discount
                 'priority' => 'trending',
+                'category_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -99,6 +102,7 @@ class ProductSeeder extends Seeder
                 'view_count' => 10,
                 'discount' => 0,
                 'priority' => 'discount',
+                'category_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -120,6 +124,7 @@ class ProductSeeder extends Seeder
                 'view_count' => 10,
                 'discount' => 0,
                 'priority' => 'new_arrival',
+                'category_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -141,6 +146,7 @@ class ProductSeeder extends Seeder
                 'view_count' => 10,
                 'discount' => 0,
                 'priority' => 'exclusive',
+                'category_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -162,6 +168,7 @@ class ProductSeeder extends Seeder
                 'view_count' => 10,
                 'discount' => 5, // 5% discount
                 'priority' => 'upcoming',
+                'category_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -183,6 +190,7 @@ class ProductSeeder extends Seeder
                 'view_count' => 10,
                 'discount' => 5, // 5% discount
                 'priority' => 'upcoming',
+                'category_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

@@ -62,6 +62,7 @@ class VendorProductController extends Controller
                 'view_count' => 'nullable',
                 'discount' => 'nullable',
                 'priority' => 'nullable',
+                'status' => 'nullable',
             ]);
 
             //check if title and slug is unique
@@ -156,6 +157,7 @@ class VendorProductController extends Controller
                 'view_count' => 'nullable',
                 'discount' => 'nullable',
                 'priority' => 'nullable',
+                'status' => 'nullable',
             ]);
 
             $vendor_id = auth()->user()?->vendor?->id;
@@ -214,7 +216,6 @@ class VendorProductController extends Controller
     //get product for select Options
     public function getOptions()
     {
-        logger(auth()->user()?->vendor?->id);
         $products = Product::query()
             ->where('is_compound_product', false)
             ->where('vendor_id', auth()->user()?->vendor?->id)
