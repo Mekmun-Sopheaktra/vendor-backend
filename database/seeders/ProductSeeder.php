@@ -181,7 +181,7 @@ class ProductSeeder extends Seeder
                 'price' => 13,
                 'image' => 'https://picsum.photos/200/300',
                 'volume' => 0,
-                'product_code' => 'C1007',
+                'product_code' => 'C1008',
                 'manufacturing_date' => now()->subMonths(1),
                 'expire_date' => null,
                 'fragrance_family' => '',
