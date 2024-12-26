@@ -23,14 +23,14 @@ class VendorProductController extends Controller
         if (!$vendor_id) {
             return $this->failed(null, 'Vendor not found', 'Vendor not found', 404);
         }
-        //search
         $search = request()->query('search');
+        $per_page = request()->query('per_page') ?? 10;
         $products = Product::query()
             ->where('vendor_id', $vendor_id)
             //relate to category by category_id
             ->with('category')
             ->where('title', 'like', '%' . $search . '%')
-            ->paginate(10);
+            ->paginate($per_page);
 
         return $this->success($products, 'Products retrieved successfully');
     }
@@ -190,7 +190,6 @@ class VendorProductController extends Controller
             $validatedData['user_id'] = auth()->user()->id;
             $validatedData['vendor_id'] = auth()->user()->vendor->id;
 
-            logger($validatedData);
             // Update the product with the validated data
             $product->update($validatedData);
 
