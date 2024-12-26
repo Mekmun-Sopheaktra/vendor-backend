@@ -17,8 +17,10 @@ return new class extends Migration
             $table->foreignId('user_id');
             $table->foreignId('product_id');
             $table->string('title');
+            $table->string('image')->nullable();
             $table->float('price');
             $table->text('description');
+            $table->boolean('status')->default(1);
             $table->timestamps();
         });
     }

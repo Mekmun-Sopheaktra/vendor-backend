@@ -92,8 +92,10 @@ class CompoundController extends Controller
                 'user_id' => $userId, // Use authenticated user's ID
                 'vendor_id' => $vendorId, // Use authenticated user's ID
                 'title' => $validatedData['title'],
+                'image' => $validatedData['image'],
                 'description' => $validatedData['description'],
                 'price' => $validatedData['price'],
+                'status' => $validatedData['status'],
                 'product_id' => $product->id, // Reference to the created product
             ]);
 
