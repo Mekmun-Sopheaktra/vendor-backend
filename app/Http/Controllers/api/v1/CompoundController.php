@@ -175,7 +175,7 @@ class CompoundController extends Controller
                 'price' => 'nullable|numeric',
                 'image' => 'nullable|string',
                 'volume' => 'nullable|numeric',
-                'product_code' => 'nullable|string|unique:products,product_code',
+                'product_code' => 'nullable|string|unique:products,product_code' . $compound->product_id,  // Ensure unique product_code but ignore current product code
                 'manufacturing_date' => 'nullable|date',
                 'fragrance_family' => 'nullable|string',
                 'expire_date' => 'nullable|date',
