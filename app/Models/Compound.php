@@ -10,7 +10,25 @@ class Compound extends Model
     use HasFactory;
 
      protected $table = 'compounds';
-    protected $fillable = ['user_id','vendor_id', 'product_id','image', 'title', 'price', 'description','status'];
+    protected $fillable = [
+        'user_id',
+        'vendor_id',
+        'product_id',
+        'title',
+        'slug',
+        'image',
+        'price',
+        'description',
+        'volume',
+        'product_code',
+        'manufacturing_date',
+        'fragrance_family',
+        'expire_date',
+        'gender',
+        'discount',
+        'priority',
+        'status',
+    ];
     protected $with = ['products'];
 
     public function products()
