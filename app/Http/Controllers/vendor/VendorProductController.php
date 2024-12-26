@@ -107,7 +107,6 @@ class VendorProductController extends Controller
             // Attach relationships to categories and tags if necessary
             if ($request->has('categories')) {
                 $product->categories()->attach($request->categories);
-                //get category name
                 $category = Category::query()->where('id', $request->categories)->first();
                 $product->category()->associate($category);
             }
@@ -164,6 +163,7 @@ class VendorProductController extends Controller
                 'discount' => 'nullable',
                 'priority' => 'nullable',
                 'status' => 'nullable',
+                'category_id' => 'nullable',
             ]);
 
             $vendor_id = auth()->user()?->vendor?->id;
@@ -190,13 +190,9 @@ class VendorProductController extends Controller
             $validatedData['user_id'] = auth()->user()->id;
             $validatedData['vendor_id'] = auth()->user()->vendor->id;
 
+            logger($validatedData);
             // Update the product with the validated data
             $product->update($validatedData);
-
-            // Attach relationships if necessary
-            if ($request->has('categories')) {
-                $product->categories()->sync($request->categories);
-            }
 
             if ($request->has('tags')) {
                 $product->tags()->sync($request->tags);
