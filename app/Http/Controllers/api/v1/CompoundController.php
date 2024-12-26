@@ -61,7 +61,6 @@ class CompoundController extends Controller
                 'gender' => 'nullable|string',
                 'discount' => 'nullable|numeric',
                 'priority' => 'nullable|string',
-                'category_id' => 'nullable',
                 'status' => 'nullable|boolean',
                 'compound_products' => 'required|array',  // Compound products must be an array
                 'compound_products.*.product_id' => 'required|integer|exists:products,id',  // Ensure product_id is valid
@@ -85,7 +84,6 @@ class CompoundController extends Controller
                 'discount' => $validatedData['discount'],
                 'priority' => $validatedData['priority'],
                 'status' => $validatedData['status'],
-                'category_id' => $validatedData['category_id'],
                 'is_compound_product' => true, // Mark as compound product
             ]);
 
@@ -184,6 +182,7 @@ class CompoundController extends Controller
                 'gender' => 'nullable|string',
                 'discount' => 'nullable|numeric',
                 'priority' => 'nullable|string',
+                'status' => 'nullable|boolean',
                 'compound_products' => 'nullable|array',  // compound_products is optional
                 'compound_products.*.product_id' => 'required|integer|exists:products,id',  // Validating product_id
             ]);

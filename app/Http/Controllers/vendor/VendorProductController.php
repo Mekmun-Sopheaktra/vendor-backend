@@ -27,7 +27,6 @@ class VendorProductController extends Controller
         $per_page = request()->query('per_page') ?? 10;
         $products = Product::query()
             ->where('vendor_id', $vendor_id)
-            //relate to category by category_id
             ->with('category')
             ->where('title', 'like', '%' . $search . '%')
             ->paginate($per_page);
