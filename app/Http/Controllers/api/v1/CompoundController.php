@@ -18,6 +18,7 @@ class CompoundController extends Controller
     {
         try {
             $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
+            $search = $request->query('search');
             $userId = auth()->user()->id;
 
             if (!$userId) {
@@ -26,6 +27,9 @@ class CompoundController extends Controller
 
             // Filter compounds by user_id
             $compounds = Compound::with('products')
+                ->when($search, function ($query, $search) {
+                    return $query->where('title', 'like', '%' . $search . '%');
+                })
                 ->where('user_id', $userId)
                 ->paginate($perPage);
 
@@ -57,6 +61,8 @@ class CompoundController extends Controller
                 'gender' => 'nullable|string',
                 'discount' => 'nullable|numeric',
                 'priority' => 'nullable|string',
+                'category_id' => 'nullable',
+                'status' => 'nullable|boolean',
                 'compound_products' => 'required|array',  // Compound products must be an array
                 'compound_products.*.product_id' => 'required|integer|exists:products,id',  // Ensure product_id is valid
             ]);
@@ -78,6 +84,8 @@ class CompoundController extends Controller
                 'gender' => $validatedData['gender'],
                 'discount' => $validatedData['discount'],
                 'priority' => $validatedData['priority'],
+                'status' => $validatedData['status'],
+                'category_id' => $validatedData['category_id'],
                 'is_compound_product' => true, // Mark as compound product
             ]);
 

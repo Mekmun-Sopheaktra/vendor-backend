@@ -27,6 +27,8 @@ class VendorProductController extends Controller
         $search = request()->query('search');
         $products = Product::query()
             ->where('vendor_id', $vendor_id)
+            //relate to category by category_id
+            ->with('category')
             ->where('title', 'like', '%' . $search . '%')
             ->paginate(10);
 
@@ -63,6 +65,7 @@ class VendorProductController extends Controller
                 'discount' => 'nullable',
                 'priority' => 'nullable',
                 'status' => 'nullable',
+                'category_id' => 'nullable',
             ]);
 
             //check if title and slug is unique
@@ -101,9 +104,12 @@ class VendorProductController extends Controller
             // Create the product
             $product = Product::query()->create($validatedData);
 
-            // Attach relationships if necessary
+            // Attach relationships to categories and tags if necessary
             if ($request->has('categories')) {
                 $product->categories()->attach($request->categories);
+                //get category name
+                $category = Category::query()->where('id', $request->categories)->first();
+                $product->category()->associate($category);
             }
 
             if ($request->has('tags')) {
