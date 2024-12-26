@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Traits\BaseApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class CompoundController extends Controller
 {
@@ -65,6 +66,19 @@ class CompoundController extends Controller
                 'compound_products' => 'required|array',  // Compound products must be an array
                 'compound_products.*.product_id' => 'required|integer|exists:products,id',  // Ensure product_id is valid
             ]);
+
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $imageName = $image->getClientOriginalName();
+                $imagePath = 'uploads/products/' . $imageName;
+
+                // Prevent duplicate uploads using Storage
+                if (!Storage::disk('public')->exists($imagePath)) {
+                    $image->storeAs('uploads/products', $imageName, 'public');
+                }
+
+                $validatedData['image'] = $imagePath;
+            }
 
             // Step 2: Create the product record first and get product_id
             $product = Product::create([
@@ -197,6 +211,22 @@ class CompoundController extends Controller
             //slug
             if ($validatedData['slug'] && Product::where('slug', $validatedData['slug'])->where('id', '!=', $compound->product_id)->exists()) {
                 return $this->failed(null, 'Error', 'Slug already exists');
+            }
+
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $imageName = $image->getClientOriginalName();
+                $imagePath = 'uploads/products/' . $imageName;
+
+                // Prevent duplicate uploads using Storage
+                if (!Storage::disk('public')->exists($imagePath)) {
+                    // Store the image if it does not exist
+                    $image->storeAs('uploads/products', $imageName, 'public');
+                    $validatedData['image'] = $imagePath;
+                } else {
+                    // Use the existing image path
+                    $validatedData['image'] = $imagePath;
+                }
             }
 
             // Update the compound itself

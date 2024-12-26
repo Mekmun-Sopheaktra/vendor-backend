@@ -10,7 +10,7 @@ class Compound extends Model
     use HasFactory;
 
      protected $table = 'compounds';
-    protected $fillable = ['user_id','vendor_id', 'product_id', 'title', 'price', 'description'];
+    protected $fillable = ['user_id','vendor_id', 'product_id','image', 'title', 'price', 'description','status'];
     protected $with = ['products'];
 
     public function products()
@@ -23,5 +23,10 @@ class Compound extends Model
     public function vendor()
     {
         return $this->belongsTo(Vendor::class);
+    }
+
+    public function getImageAttribute($value)
+    {
+        return asset('storage/' . $value);
     }
 }
