@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\api\v1\BasketController;
+use App\Http\Controllers\api\v1\CategoryController;
 use App\Http\Controllers\api\v1\CommentController;
 use App\Http\Controllers\api\v1\CompoundController;
 use App\Http\Controllers\api\v1\LikeController;
@@ -24,6 +25,8 @@ Route::prefix('vendor')->middleware(['auth:sanctum', 'api.vendor'])->group(funct
         Route::get('', [VendorDashboardController::class, 'search'])->name('api.vendor.search.data');
     });
     Route::get('product/options', [VendorProductController::class, 'getOptions'])->name('api.vendor.product.options');
+
+    Route::get('category', [CategoryController::class, 'index'])->name('api.category');
 
     //products
     Route::post('product/create', [VendorProductController::class, 'store'])->name('api.vendor.product.store');
