@@ -184,7 +184,7 @@ class CompoundController extends Controller
             // Validate the incoming data for compound fields
             $validatedData = $request->validate([
                 'title' => 'nullable|max:255',
-                'slug' => 'nullable|unique:products,slug',  // Ensure unique slug but ignore current product slug
+                'slug' => 'nullable',  // Ensure unique slug but ignore current product slug
                 'description' => 'nullable|string',
                 'price' => 'nullable|numeric',
                 'image' => 'nullable',

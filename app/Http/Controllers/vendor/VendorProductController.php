@@ -198,7 +198,7 @@ class VendorProductController extends Controller
 
             return $this->success($product, 'Product updated successfully');
         } catch (Exception $e) {
-            return $this->failed($e, 'Error', 'Product updated Error from server');
+            return $this->failed($e->getMessage(), 'Error', 'Product updated Error from server');
         }
     }
 
