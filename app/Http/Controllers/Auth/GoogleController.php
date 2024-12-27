@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Constants\RoleConstants;
 use App\Traits\BaseApiResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Facades\Socialite;
 use App\Http\Controllers\Controller;
@@ -57,9 +58,9 @@ class GoogleController extends Controller
     }
 
     //handleGoogleCode($code)
-    public function handleGoogleCode()
+    public function handleGoogleCode(Request $request)
     {
-        logger('Google code: ' . request('code'));
+        $code = $request->code;
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
             $name = $googleUser->getName();
