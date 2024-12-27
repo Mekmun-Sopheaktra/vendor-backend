@@ -116,7 +116,7 @@ class CompoundController extends Controller
             // Fetch all product IDs belonging to the current vendor
             $vendorProducts = Product::where('vendor_id', $vendorId)->pluck('id')->toArray();
 
-            $compoundProducts = json_decode($validatedData['compound_products'], true) ?? $validatedData['compound_products'];
+            $compoundProducts = is_array($validatedData['compound_products']) ? $validatedData['compound_products'] : json_decode($validatedData['compound_products'], true);
             // Check that each product_id in compound_products belongs to the vendor
             foreach ($compoundProducts as $productData) {
                 if (!in_array($productData['product_id'], $vendorProducts)) {
@@ -235,7 +235,8 @@ class CompoundController extends Controller
 
             // Handle compound products data if it's provided
             if (!empty($validatedData['compound_products'])) {
-                $compoundProducts = json_decode($validatedData['compound_products'], true) ?? $validatedData['compound_products'];
+                //check if array or json
+                $compoundProducts = is_array($validatedData['compound_products']) ? $validatedData['compound_products'] : json_decode($validatedData['compound_products'], true);
 
                 $syncData = [];
                 // Fetch vendor products for validation
