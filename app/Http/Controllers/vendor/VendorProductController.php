@@ -54,7 +54,7 @@ class VendorProductController extends Controller
                 'price' => 'required',
                 'image' => 'nullable', // Validate image type and size
                 'volume' => 'nullable',
-                'product_code' => 'nullable|unique:products,product_code',
+                'product_code' => 'unique:products,product_code',
                 'manufacturing_date' => 'nullable',
                 'fragrance_family' => 'nullable',
                 'expire_date' => 'nullable',
@@ -150,9 +150,9 @@ class VendorProductController extends Controller
                 'slug' => 'required|string|max:255',
                 'description' => 'nullable',
                 'price' => 'required',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validate image type and size
+                'image' => 'nullable', // Validate image type and size
                 'volume' => 'nullable',
-                'product_code' => 'nullable',
+                'product_code' => 'unique:products,product_code',
                 'manufacturing_date' => 'nullable',
                 'fragrance_family' => 'nullable',
                 'expire_date' => 'nullable',

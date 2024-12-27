@@ -53,7 +53,7 @@ class CompoundController extends Controller
                 'slug' => 'required|string|max:255|unique:products,slug',
                 'description' => 'nullable|string',
                 'price' => 'required|numeric',
-                'image' => 'nullable|string',
+                'image' => 'nullable',
                 'volume' => 'nullable',
                 'product_code' => 'nullable|string|unique:products,product_code',
                 'manufacturing_date' => 'nullable|date',
@@ -194,13 +194,13 @@ class CompoundController extends Controller
 
             // Validate the incoming data for compound fields
             $validatedData = $request->validate([
-                'title' => 'nullable|string|max:255',
-                'slug' => 'nullable|string|max:255|unique:products,slug,' . $compound->product_id,  // Ensure unique slug but ignore current product slug
+                'title' => 'nullable|max:255',
+                'slug' => 'nullable|unique:products,slug',  // Ensure unique slug but ignore current product slug
                 'description' => 'nullable|string',
                 'price' => 'nullable|numeric',
-                'image' => 'nullable|string',
+                'image' => 'nullable',
                 'volume' => 'nullable|numeric',
-                'product_code' => 'nullable|string|unique:products,product_code' . $compound->product_id,  // Ensure unique product_code but ignore current product code
+                'product_code' => 'required',  // Ensure unique product_code but ignore current product code
                 'manufacturing_date' => 'nullable|date',
                 'fragrance_family' => 'nullable|string',
                 'expire_date' => 'nullable|date',
