@@ -189,7 +189,7 @@ class CompoundController extends Controller
                 'price' => 'nullable|numeric',
                 'image' => 'nullable',
                 'volume' => 'nullable|numeric',
-                'product_code' => 'required',  // Ensure unique product_code but ignore current product code
+                'product_code' => 'nullable',  // Ensure unique product_code but ignore current product code
                 'manufacturing_date' => 'nullable|date',
                 'fragrance_family' => 'nullable|string',
                 'expire_date' => 'nullable|date',

@@ -152,7 +152,7 @@ class VendorProductController extends Controller
                 'price' => 'required',
                 'image' => 'nullable', // Validate image type and size
                 'volume' => 'nullable',
-                'product_code' => 'unique:products,product_code',
+                'product_code' => 'nullable',
                 'manufacturing_date' => 'nullable',
                 'fragrance_family' => 'nullable',
                 'expire_date' => 'nullable',
