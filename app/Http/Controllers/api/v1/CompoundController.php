@@ -197,18 +197,13 @@ class CompoundController extends Controller
                 'discount' => 'nullable|numeric',
                 'priority' => 'nullable|string',
                 'status' => 'nullable|boolean',
-                'compound_products' => 'nullable|array',  // compound_products is optional
+                'compound_products' => 'nullable',  // compound_products is optional
                 'compound_products.*.product_id' => 'required|integer|exists:products,id',  // Validating product_id
             ]);
 
             //check if duplicate product_code and slug
             if ($validatedData['product_code'] && Product::where('product_code', $validatedData['product_code'])->where('id', '!=', $compound->product_id)->exists()) {
                 return $this->failed(null, 'Error', 'Product code already exists');
-            }
-
-            //slug
-            if ($validatedData['slug'] && Product::where('slug', $validatedData['slug'])->where('id', '!=', $compound->product_id)->exists()) {
-                return $this->failed(null, 'Error', 'Slug already exists');
             }
 
             if ($request->hasFile('image')) {
