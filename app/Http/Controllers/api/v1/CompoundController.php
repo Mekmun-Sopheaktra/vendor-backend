@@ -116,8 +116,9 @@ class CompoundController extends Controller
             // Fetch all product IDs belonging to the current vendor
             $vendorProducts = Product::where('vendor_id', $vendorId)->pluck('id')->toArray();
 
+            $compoundProducts = json_decode($validatedData['compound_products'], true);
             // Check that each product_id in compound_products belongs to the vendor
-            foreach ($validatedData['compound_products'] as $productData) {
+            foreach ($compoundProducts as $productData) {
                 if (!in_array($productData['product_id'], $vendorProducts)) {
                     $product = Product::find($productData['product_id']);
                     throw new \Exception("Product ID {$product->title} does not belong to the vendor.");
@@ -234,14 +235,14 @@ class CompoundController extends Controller
 
             // Handle compound products data if it's provided
             if (!empty($validatedData['compound_products'])) {
-                $compoundProductsData = $validatedData['compound_products'];
+                $compoundProducts = json_decode($validatedData['compound_products'], true);
 
                 $syncData = [];
                 // Fetch vendor products for validation
                 $vendorProducts = Product::where('vendor_id', $vendorId)->pluck('id')->toArray();
 
                 // Check that each product_id in compound_products belongs to the vendor
-                foreach ($validatedData['compound_products'] as $productData) {
+                foreach ($compoundProducts as $productData) {
                     if (!in_array($productData['product_id'], $vendorProducts)) {
                         $product = Product::find($productData['product_id']);
                         throw new \Exception("Product ID {$product->title} does not belong to the vendor.");
