@@ -20,7 +20,7 @@ return new class extends Migration
             $table->text('description');
             $table->integer('price');
             $table->string('image')->nullable();
-            $table->integer("volume")->default('0');
+            $table->integer("volume")->nullable();
             $table->string("product_code")->unique();
             $table->date("manufacturing_date")->nullable();
             $table->date("expire_date")->nullable();
