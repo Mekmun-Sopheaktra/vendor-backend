@@ -35,7 +35,7 @@ trait BaseApiResponse
         $alert = ($title !== null || $message !== null) ? ['title' => $title, 'message' => $message] : null;
 
         return response()->json([
-            'data' => null,
+            'data' => $data,
             'status' => false,
             'alert' => $alert,
         ], $code);
