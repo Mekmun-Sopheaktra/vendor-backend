@@ -63,7 +63,7 @@ class CompoundController extends Controller
                 'discount' => 'nullable|numeric',
                 'priority' => 'nullable|string',
                 'status' => 'nullable|boolean',
-                'compound_products' => 'required|array',  // Compound products must be an array
+                'compound_products' => 'required',  // Compound products must be an array
                 'compound_products.*.product_id' => 'required|integer|exists:products,id',  // Ensure product_id is valid
             ]);
 

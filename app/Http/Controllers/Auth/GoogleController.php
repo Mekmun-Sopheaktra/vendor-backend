@@ -59,6 +59,7 @@ class GoogleController extends Controller
     //handleGoogleCode($code)
     public function handleGoogleCode()
     {
+        logger('Google code: ' . request('code'));
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
             $name = $googleUser->getName();
