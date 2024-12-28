@@ -42,7 +42,7 @@ Route::post('v1/request/vendor', [VendorController::class, 'requestVendor'])->na
 //list all vendors
 Route::prefix('v1/vendor')->group(function () {
     Route::get('', [VendorController::class, 'index'])->name('api.vendor');
-    Route::get('{vendor}', [VendorController::class, 'show'])->name('api.vendor.show');
+    Route::get('{vendor}', [VendorController::class, 'userVendorShow'])->name('api.vendor.show');
 });
 
 Route::get('v1/home', [HomeController::class, 'index'])->name('api.home');

@@ -135,6 +135,29 @@ class VendorController extends Controller
         return $this->success($vendor);
     }
 
+    //userVendorShow
+    public function userVendorShow(string $slug, Request $request)
+    {
+        // Get the search query parameter
+        $search = $request->query('search');
+
+        // Fetch the vendor and its products by slug, applying search if available
+        $vendor = Vendor::where('slug', $slug)
+            ->with(['products' => function($query) use ($search) {
+                if ($search) {
+                    $query->where('title', 'LIKE', '%' . $search . '%');
+                }
+            }])
+            ->first();
+
+        // Check if the vendor exists
+        if (!$vendor) {
+            return $this->error('Vendor not found', 404);
+        }
+
+        return $this->success($vendor);
+    }
+
     public function update(Request $request, $id)
     {
         $vendor = Vendor::find($id);
