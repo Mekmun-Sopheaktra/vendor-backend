@@ -18,7 +18,12 @@ class VendorController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->query('per_page', 10); // Default to 10 items per page
-        $vendors = Vendor::paginate($perPage);
+        //search vendors
+        $search = $request->query('search');
+        logger($search);
+        $vendors = Vendor::query()
+            ->where('name', 'like', "%$search%")
+            ->paginate($perPage);
 
         return $this->success($vendors, 'Vendors retrieved successfully');
     }

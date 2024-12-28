@@ -39,6 +39,12 @@ Route::prefix('v1/product')->group(function () {
 //requestVendor create vendor data
 Route::post('v1/request/vendor', [VendorController::class, 'requestVendor'])->name('api.vendor.request');
 
+//list all vendors
+Route::prefix('v1/vendor')->group(function () {
+    Route::get('', [VendorController::class, 'index'])->name('api.vendor');
+    Route::get('{vendor}', [VendorController::class, 'show'])->name('api.vendor.show');
+});
+
 Route::get('v1/home', [HomeController::class, 'index'])->name('api.home');
 
 //product routes
