@@ -34,7 +34,7 @@ class OrderController extends Controller
                 return [
                     'code' => $order->code,
                     'products' => $this->mapProducts($order->products),
-                    'status' => OrderConstants::getStatusFromString($order->status),
+                    'status' => $order->status,
                     'address' => $order->address,
                     'created_at' => $order->created_at,
                     'amount' => $order->amount,

@@ -13,6 +13,7 @@ class Order extends Model
         'code',
         'vendor_id',
         'user_id',
+        'status',
         'address',
         'transaction_method',
         'transaction_id',

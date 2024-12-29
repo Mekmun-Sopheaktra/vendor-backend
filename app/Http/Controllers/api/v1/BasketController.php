@@ -14,6 +14,7 @@ use App\Models\Vendor;
 use App\Traits\BaseApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class BasketController extends Controller
 {
@@ -117,57 +118,97 @@ class BasketController extends Controller
     //checkout
     public function checkout(Request $request)
     {
-        $products_id = $request->input('products_id');
+        $vendor_id = $request->input('vendor_id');
 
-        // Validate input
-        if (empty($products_id) || !is_array($products_id)) {
-            return $this->failed(null, 'error', 'Invalid products_id input.');
+        // Validate vendor_id input
+        if (empty($vendor_id)) {
+            return $this->failed(null, 'error', 'Vendor ID is required.');
         }
 
-        // Check if all products belong to the same vendor
-        $vendors = Product::query()
-            ->whereIn('id', $products_id)
-            ->pluck('vendor_id')
-            ->toArray();
-
-        if (count(array_unique($vendors)) > 1) {
-            return $this->failed(null, 'error', 'You can only checkout products from the same vendor.');
+        // Check if the vendor exists in the Vendor table
+        $validVendor = Vendor::query()->where('id', $vendor_id)->exists();
+        if (!$validVendor) {
+            return $this->failed(null, 'error', 'Vendor not found.');
         }
 
-        // Calculate total price
-        $total = Basket::query()
-            ->whereIn('id', $products_id)
+        // Get all basket items for products belonging to the specified vendor
+        $basketItems = Basket::query()
+            ->whereIn('product_id', function ($query) use ($vendor_id) {
+                $query->select('id')
+                    ->from('products')
+                    ->where('vendor_id', $vendor_id);
+            })
             ->get();
 
-        // Return success response
-        return $this->success($total, 'Success', 'Checkout successful');
+        // Check if the basket is empty for the selected vendor
+        if ($basketItems->isEmpty()) {
+            return $this->failed(null, 'error', 'Your basket does not contain products from the selected vendor.');
+        }
+
+        // Update the status of the basket items to 'pending_payment'
+        $basketItems->each(function ($item) {
+            $item->status = 'pending_payment';
+            $item->save();
+        });
+
+        // Calculate the total price from the products table
+        $totalPrice = Product::query()
+            ->where('vendor_id', $vendor_id)
+            ->whereIn('id', $basketItems->pluck('product_id'))
+            ->sum('price');
+
+        $data = [
+            'total' => $totalPrice,
+            'vendor_id' => $vendor_id,
+            'products_id' => $basketItems->pluck('product_id')->toArray(),
+        ];
+
+        // Return a success response
+        return $this->success($data, 'Success', 'Checkout successful.');
     }
 
     public function buy(BasketBuyRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        if (auth()->user()->baskets()->where('status', 'created')->count() == 0) {
-            return $this->success(null, 'Empty', 'Your shopping cart is empty');
-        }
-        $products = auth()->user()->baskets()->where('status', 'created')->get();
+        $productIds = $validated['products_id']; // Array of product IDs
+        $vendorId = $validated['vendor_id'];
 
-        auth()->user()->baskets()->where('status', 'created')->update([
+        //check products is already paid in the basket
+        $paidProducts = auth()->user()->baskets()->whereIn('product_id', $productIds)->where('status', 'paid')->get();
+        if (!$paidProducts->isEmpty()) {
+            return $this->failed($paidProducts, 'Invalid Products', 'Some products are already paid.', 422);
+        }
+
+        // Fetch only products from the user's basket
+        $userBasket = auth()->user()->baskets()->whereIn('product_id', $productIds)->get();
+
+        if ($userBasket->isEmpty()) {
+            return $this->failed($userBasket, 'Invalid Products', 'No valid products found in your basket', 422);
+        }
+
+        // Mark selected products as paid
+        auth()->user()->baskets()->whereIn('product_id', $productIds)->update([
             'status' => 'paid',
         ]);
-        $order = Order::query()->create([
-            'code' => rand(),
-            'user_id' => auth()->user()->id,
-            "address" => $validated['address'],
-            "transaction_method" => $validated['transaction_method'],
-            "transaction_id" => $validated['transaction_id'],
-            "amount" => $validated['amount'],
+
+        // Create an order
+        $order = Order::create([
+            'code' => Str::uuid(), // Generate a unique order code
+            'user_id' => auth()->id(),
+            'vendor_id' => $vendorId,
+            'address' => $validated['address'],
+            'transaction_method' => $validated['transaction_method'],
+            'transaction_id' => $validated['transaction_id'],
+            'amount' => $validated['amount'],
+            'status' => 'success',
         ]);
 
-        foreach ($products as $product) {
-            OrderProduct::query()->create([
+        // Link products to the order
+        foreach ($userBasket as $basketItem) {
+            OrderProduct::create([
                 'order_id' => $order->id,
-                'product_id' => $product->product_id,
-                'count' => $product->count,
+                'product_id' => $basketItem->product_id,
+                'count' => $basketItem->count, // Assuming count exists in the basket
             ]);
         }
 

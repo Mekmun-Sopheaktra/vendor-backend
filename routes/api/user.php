@@ -70,8 +70,6 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     });
 
     //category routes
-
-
     Route::prefix('product')->group(function () {
         Route::get('wishlist', [ProductController::class, 'wishlist'])->name('api.product.wishlist');
         Route::post('{product}/like', [LikeController::class, 'likeProduct'])->name('api.product.like');
