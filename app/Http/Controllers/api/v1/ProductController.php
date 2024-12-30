@@ -85,7 +85,7 @@ class ProductController extends Controller
     public function show($id): JsonResponse
     {
         // Find the product by ID, including related categories, tags, and galleries
-        $product = Product::with(['categories', 'tags', 'galleries'])->where('status', true)->find($id);
+        $product = Product::with(['category', 'tags', 'galleries'])->where('status', true)->find($id);
 
         // Return an error if the product is not found
         if (!$product) {
