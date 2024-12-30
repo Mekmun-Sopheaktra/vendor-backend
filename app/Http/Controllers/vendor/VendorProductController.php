@@ -4,13 +4,13 @@ namespace App\Http\Controllers\vendor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\Discount;
 use App\Models\Product;
 use App\Models\Tag;
 use App\Traits\BaseApiResponse;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\ValidationException;
 
 class VendorProductController extends Controller
 {
@@ -124,11 +124,14 @@ class VendorProductController extends Controller
     // show product
     public function show(Request $requestt)
     {
-        //get vendor id from user table
+
+        // Get vendor id from user table
         $vendor_id = auth()->user()?->vendor?->id;
         if (!$vendor_id) {
             return $this->failed(null, 'Vendor not found', 'Vendor not found', 404);
         }
+
+        // Find the product with the associated discount
         $product = Product::query()
             ->where('vendor_id', $vendor_id)
             ->where('id', $requestt->product)
@@ -138,6 +141,17 @@ class VendorProductController extends Controller
             return $this->failed(null, 'Product not found', 'Product not found', 404);
         }
 
+        //search for discount for this product
+        $discount = Discount::query()
+            ->where('status', 1)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->where('product_id', $product->id)
+            ->where('vendor_id', $vendor_id)
+            ->first();
+
+
+        // Return the product with the potentially updated price
         return $this->success($product, 'Product retrieved successfully');
     }
 

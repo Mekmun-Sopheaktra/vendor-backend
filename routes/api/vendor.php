@@ -9,6 +9,7 @@ use App\Http\Controllers\api\v1\NotificationController;
 use App\Http\Controllers\api\v1\ProfileController;
 use App\Http\Controllers\vendor\VendorAuthController;
 use App\Http\Controllers\vendor\VendorDashboardController;
+use App\Http\Controllers\vendor\VendorDiscountController;
 use App\Http\Controllers\vendor\VendorOrderController;
 use App\Http\Controllers\vendor\VendorProductController;
 use Illuminate\Support\Facades\Route;
@@ -29,8 +30,8 @@ Route::prefix('vendor')->middleware(['auth:sanctum', 'api.vendor'])->group(funct
     Route::get('category', [CategoryController::class, 'index'])->name('api.category');
 
     //products
-    Route::post('product/create', [VendorProductController::class, 'store'])->name('api.vendor.product.store');
     Route::get('product', [VendorProductController::class, 'index'])->name('api.vendor.products');
+    Route::post('product/create', [VendorProductController::class, 'store'])->name('api.vendor.product.store');
     Route::get('product/{product}', [VendorProductController::class, 'show'])->name('api.vendor.product.show');
     //delete product
     Route::delete('product/{product}', [VendorProductController::class, 'destroy'])->name('api.vendor.product.delete');
@@ -79,6 +80,24 @@ Route::prefix('vendor')->middleware(['auth:sanctum', 'api.vendor'])->group(funct
 
     Route::prefix('orders')->group(function () {
         Route::get('', [VendorOrderController::class, 'index']);
+        Route::get('history', [VendorOrderController::class, 'history'])->name('api.vendor.order.history');
+        Route::post('approve/{order}', [VendorOrderController::class, 'approveOrder'])->name('api.vendor.order.approve');
+        Route::post('reject/{order}', [VendorOrderController::class, 'rejectOrder'])->name('api.vendor.order.reject');
+    });
+
+    //discount routes
+    Route::prefix('discount')->group(function () {
+        // List discounts
+        Route::get('/', [VendorDiscountController::class, 'index'])->name('api.vendor.discount.index');
+        // Create a discount
+        Route::post('/', [VendorDiscountController::class, 'store'])->name('api.vendor.discount.store');
+        //show
+        Route::get('/{discount}', [VendorDiscountController::class, 'show'])->name('api.vendor.discount.show');
+        // Update a discount
+        Route::post('/{discount}', [VendorDiscountController::class, 'update'])->name('api.vendor.discount.update');
+        // Delete a discount
+        Route::delete('/{discount}', [VendorDiscountController::class, 'destroy'])->name('api.vendor.discount.delete');
+
     });
 
     Route::get('address', [ProfileController::class, 'address'])->name('api.vendor.address');

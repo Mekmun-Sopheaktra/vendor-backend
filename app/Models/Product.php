@@ -88,4 +88,8 @@ class Product extends Model
     {
         return asset('storage/' . $value);
     }
+    public function discount()
+    {
+        return $this->hasMany(Discount::class);
+    }
 }
