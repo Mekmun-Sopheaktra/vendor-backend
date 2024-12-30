@@ -147,6 +147,8 @@ class VendorController extends Controller
                 if ($search) {
                     $query->where('title', 'LIKE', '%' . $search . '%');
                 }
+                // Include the related category for each product
+                $query->with('category');
             }])
             ->first();
 
