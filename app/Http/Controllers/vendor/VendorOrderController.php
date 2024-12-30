@@ -80,6 +80,40 @@ class VendorOrderController extends Controller
         }
     }
 
+    //show
+    public function show(Order $order)
+    {
+        try {
+            // Get the authenticated vendor
+            $vendor = auth()->user();
+
+            // Retrieve the vendor's store along with its products
+            $store = Vendor::where('user_id', $vendor->id)
+                ->with('products')
+                ->firstOrFail(); // Using firstOrFail for better error handling
+
+            // Check if the order is associated with the vendor's products
+            $orderProduct = OrderProduct::where('order_id', $order->id)
+                ->whereIn('product_id', $store->products->pluck('id'))
+                ->first();
+
+            if (!$orderProduct) {
+                return $this->failed(null, 'Error', 'The order is not associated with your products.');
+            }
+
+            // Retrieve the order details
+            $order = Order::where('id', $order->id)
+                ->with(['products', 'user', 'address'])
+                ->first();
+
+            return $this->success($order, 'Order', 'Order details retrieved successfully');
+        } catch (\Exception $e) {
+            Log::error('Error retrieving order: ' . $e->getMessage());
+
+            return $this->failed(null, 'Error', 'An error occurred while fetching the order.');
+        }
+    }
+
     //approve order
     public function approveOrder(Order $order)
     {

@@ -81,6 +81,8 @@ Route::prefix('vendor')->middleware(['auth:sanctum', 'api.vendor'])->group(funct
     Route::prefix('orders')->group(function () {
         Route::get('', [VendorOrderController::class, 'index']);
         Route::get('history', [VendorOrderController::class, 'history'])->name('api.vendor.order.history');
+        //show
+        Route::get('{order}', [VendorOrderController::class, 'show'])->name('api.vendor.order.show');
         Route::post('approve/{order}', [VendorOrderController::class, 'approveOrder'])->name('api.vendor.order.approve');
         Route::post('reject/{order}', [VendorOrderController::class, 'rejectOrder'])->name('api.vendor.order.reject');
     });
