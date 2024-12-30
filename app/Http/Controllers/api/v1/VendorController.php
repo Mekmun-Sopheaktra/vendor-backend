@@ -157,7 +157,12 @@ class VendorController extends Controller
             return $this->error('Vendor not found', 404);
         }
 
-        return $this->success($vendor);
+        $totalProducts = $vendor->products->count();
+
+        $vendorData = $vendor->toArray();
+        $vendorData['total_products'] = $totalProducts;
+
+        return $this->success($vendorData);
     }
 
     public function update(Request $request, $id)
