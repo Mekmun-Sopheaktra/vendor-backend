@@ -19,7 +19,7 @@ class CategoryController extends Controller
         $search = $request->query('search');
         $categories = Category::query()
             ->where('name', 'like', '%' . $search . '%')
-            ->get();
+            ->paginate($perPage);
         return $this->success($categories);
     }
 

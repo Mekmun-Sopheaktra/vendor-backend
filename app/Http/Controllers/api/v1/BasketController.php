@@ -41,6 +41,15 @@ class BasketController extends Controller
         // Transform grouped data
         $groupedData = $groupedBaskets->map(function ($baskets, $vendorId) {
             return [
+                'summary' => [
+                    'subtotal' => $baskets->sum(function ($basket) {
+                        return $basket->product->price * $basket->count;
+                    }),
+                    'delivery_fee' => 2.5,
+                    'total' => $baskets->sum(function ($basket) {
+                        return $basket->product->price * $basket->count;
+                    }) + 2.5,
+                ],
                 'vendor' => Vendor::query()->find($vendorId),
                 'products' => BasketResource::collection($baskets),
             ];
