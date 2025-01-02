@@ -309,6 +309,11 @@ class ProductController extends Controller
         ->limit(4)
         ->get();
 
+        $discountedProducts->map(function ($product) {
+            $product->final_price = $product->price - ($product->price * $product->discount / 100);
+            return $product;
+        });
+
         return $this->success($discountedProducts);
     }
 
