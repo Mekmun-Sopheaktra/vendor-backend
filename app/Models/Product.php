@@ -80,7 +80,7 @@ class Product extends Model
 
     public function orders()
     {
-        return $this->hasMany(OrderProduct::class);
+        return $this->belongsToMany(Order::class, 'order_products');
     }
 
     //get image attribute

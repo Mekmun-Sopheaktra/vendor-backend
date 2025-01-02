@@ -22,7 +22,7 @@ class Order extends Model
 
     public function products()
     {
-        return $this->hasMany(OrderProduct::class);
+        return $this->belongsToMany(Product::class, 'order_products');
     }
 
     public function address()

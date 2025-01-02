@@ -23,21 +23,25 @@ class VendorOrderController extends Controller
 
             // Retrieve the vendor's store along with its products
             $store = Vendor::where('user_id', $vendor->id)
-                ->with('products')
+                ->with('products') // Ensure you have a 'products' relationship in the Vendor model
                 ->firstOrFail(); // Using firstOrFail for better error handling
 
             // Fetch the orders associated with the vendor's products
-            $orderIds = Product::where('vendor_id', $store->id)
-                ->with('orders')
-                ->get()
-                ->flatMap(fn($product) => $product->orders->pluck('order_id'));
-
-            // Retrieve the orders based on the collected order IDs
-            $orders = Order::whereIn('id', $orderIds)
-                //status is created
+            $orders = Order::whereHas('products', function ($query) use ($store) {
+                // Filter products by vendor's products
+                $query->whereIn('product_id', $store->products->pluck('id'));
+            })
                 ->where('status', 'created')
-                ->with(['products', 'user', 'address'])
+                ->with(['products', 'user', 'address']) // Eager load related products, user, and address
                 ->get();
+
+            // Format the orders with pivot data (e.g., count of products)
+            $orders->each(function ($order) {
+                $order->products->each(function ($product) {
+                    // Access pivot data like count, etc.
+                    $product->pivot->count = $product->pivot->count; // Add this field to the result if needed
+                });
+            });
 
             return $this->success($orders, 'Order', 'Order list completed');
         } catch (\Exception $e) {
@@ -56,20 +60,16 @@ class VendorOrderController extends Controller
 
             // Retrieve the vendor's store along with its products
             $store = Vendor::where('user_id', $vendor->id)
-                ->with('products')
+                ->with('products') // Eager load the products of the vendor
                 ->firstOrFail(); // Using firstOrFail for better error handling
 
-            // Fetch the orders associated with the vendor's products
-            $orderIds = Product::where('vendor_id', $store->id)
-                ->with('orders')
-                ->get()
-                ->flatMap(fn($product) => $product->orders->pluck('order_id'));
-
-            // Retrieve the orders based on the collected order IDs
-            $orders = Order::whereIn('id', $orderIds)
-                //where status is not created
-                ->where('status', '!=', 'created')
-                ->with(['products', 'user', 'address'])
+            // Fetch the orders associated with the vendor's products (excluding 'created' status)
+            $orders = Order::whereHas('products', function ($query) use ($store) {
+                // Filter by vendor's products
+                $query->whereIn('product_id', $store->products->pluck('id'));
+            })
+                ->where('status', '!=', 'created') // Orders that are not in 'created' status
+                ->with(['products', 'user', 'address']) // Eager load related products, user, and address
                 ->get();
 
             return $this->success($orders, 'Order', 'Order list completed');
