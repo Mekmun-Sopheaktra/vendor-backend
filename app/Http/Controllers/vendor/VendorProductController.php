@@ -124,35 +124,40 @@ class VendorProductController extends Controller
     // show product
     public function show(Request $requestt)
     {
+        try {
+            // Get vendor id from user table
+            $vendor_id = auth()->user()?->vendor?->id;
+            if (!$vendor_id) {
+                return $this->failed(null, 'Vendor not found', 'Vendor not found', 404);
+            }
 
-        // Get vendor id from user table
-        $vendor_id = auth()->user()?->vendor?->id;
-        if (!$vendor_id) {
-            return $this->failed(null, 'Vendor not found', 'Vendor not found', 404);
+            $product = Product::query()
+                ->where('vendor_id', $vendor_id)
+                ->where('id', $requestt->product)
+                ->first();
+
+            if (!$product) {
+                return $this->failed(null, 'Product not found', 'Product not found', 404);
+            }
+
+            $discount = Discount::query()
+                ->where('status', 1)
+                ->where('start_date', '<=', now())
+                ->where('end_date', '>=', now())
+                ->where('product_id', $product->id)
+                ->where('vendor_id', $vendor_id)
+                ->first();
+
+            if ($discount) {
+                $product->final_price = $product->price - ($product->price * $discount->discount / 100);
+                $product->discount = $discount;
+            }
+
+            return $this->success($product, 'Product retrieved successfully');
+
+        } catch (\Exception $e) {
+            return $this->failed(null, 'An error occurred', $e->getMessage(), 500);
         }
-
-        // Find the product with the associated discount
-        $product = Product::query()
-            ->where('vendor_id', $vendor_id)
-            ->where('id', $requestt->product)
-            ->first();
-
-        if (!$product) {
-            return $this->failed(null, 'Product not found', 'Product not found', 404);
-        }
-
-        //search for discount for this product
-        $discount = Discount::query()
-            ->where('status', 1)
-            ->where('start_date', '<=', now())
-            ->where('end_date', '>=', now())
-            ->where('product_id', $product->id)
-            ->where('vendor_id', $vendor_id)
-            ->first();
-
-
-        // Return the product with the potentially updated price
-        return $this->success($product, 'Product retrieved successfully');
     }
 
     //update product

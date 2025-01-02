@@ -8,6 +8,7 @@ use App\Http\Requests\Search\SearchRequest;
 use App\Http\Resources\Comment\CommentResource;
 use App\Http\Resources\Product\wishListCollection;
 use App\Models\Category;
+use App\Models\Discount;
 use App\Models\LikeProducts;
 use App\Models\Product;
 use App\Models\Tag;
@@ -25,12 +26,12 @@ class ProductController extends Controller
         $validatedData = $request->validated();
         $productsQuery = Product::query()->where('status', true);
 
-        //title
+        // title
         if (!empty($validatedData['title'])) {
             $productsQuery->where('title', 'like', '%' . $validatedData['title'] . '%');
         }
 
-        //volume
+        // volume
         if (!empty($validatedData['volume'])) {
             $productsQuery->where('volume', 'like', '%' . $validatedData['volume'] . '%');
         }
@@ -76,8 +77,27 @@ class ProductController extends Controller
         $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
         $page = $request->query('page', 1);
 
-        $products = $productsQuery->with(['categories', 'tags', 'galleries'])
+        $products = $productsQuery->with(['category', 'tags', 'galleries'])
             ->paginate($perPage, ['*'], 'page', $page);
+
+        $discounts = Discount::query()
+            ->where('status', 1)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->get()
+            ->keyBy('product_id');
+
+        $products->getCollection()->transform(function ($product) use ($discounts) {
+            if ($discounts->has($product->id)) {
+                $discount = $discounts->get($product->id);
+                $product->final_price = $product->price - ($product->price * $discount->discount / 100);
+                $product->discount = $discount;
+            } else {
+                $product->final_price = $product->price;
+                $product->discount = null;
+            }
+            return $product;
+        });
 
         return $this->success($products);
     }
@@ -93,13 +113,27 @@ class ProductController extends Controller
         }
 
         // Retrieve related products
-        $relatedProducts = Product::whereHas('categories', function ($query) use ($product) {
-            // Find products in the same categories as the current product
-            $query->whereIn('categories.id', $product->categories->pluck('id'));
-        })
+        $relatedProducts = Product::where('category_id', $product->category_id)
+            ->where('discount', '>', 0)
+            ->where('status', true)
+            ->where('vendor_id', $product->vendor_id)
             ->where('id', '!=', $id) // Exclude the current product
             ->limit(5) // Limit the number of related products
             ->get();
+
+        logger($relatedProducts);
+
+        $discount = Discount::query()
+            ->where('status', 1)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->where('product_id', $product->id)
+            ->first();
+
+        if ($discount) {
+            $product->final_price = $product->price - ($product->price * $discount->discount / 100);
+            $product->discount = $discount;
+        }
 
         // Add related products to the product response
         $product->related_products = $relatedProducts;
@@ -215,39 +249,6 @@ class ProductController extends Controller
         ]);
     }
 
-    public function wishlist(Request $request): JsonResponse
-    {
-        $productsQuery = auth()->user()->likedProducts()->with('product');
-
-        if ($request->has('category_id')) {
-            $productsQuery->whereHas('product', function ($query) use ($request) {
-                $query->where('id', $request->input('category_id'));
-            });
-        }
-
-        $perPage = $request->has('per_page') ? (int) $request->input('per_page') : 15;
-        $currentPage = $request->has('page') ? (int) $request->input('page') : 1;
-
-        Paginator::currentPageResolver(function () use ($currentPage) {
-            return $currentPage;
-        });
-
-        $products = $productsQuery->paginate($perPage);
-
-        $data = [
-            'products' => new wishListCollection($products),
-            'pagination' => [
-                'page_number' => $products->currentPage(),
-                'total_rows' => $products->total(),
-                'total_pages' => $products->lastPage(),
-                'has_previous_page' => $products->previousPageUrl() !== null,
-                'has_next_page' => $products->nextPageUrl() !== null,
-            ],
-        ];
-
-        return $this->success($data);
-    }
-
     private function getComments($product)
     {
         return $product->comments()->select('id', 'comment', 'created_at', 'user_id')->with('user:id,name,profile_photo_path')->get();
@@ -304,6 +305,8 @@ class ProductController extends Controller
         $discountedProducts = Product::where('discount', '>', 0) // Products with discounts
         ->where('status', true)
         ->orderBy('priority', 'desc') // Sort by priority
+                //limit to 4 products
+        ->limit(4)
         ->get();
 
         return $this->success($discountedProducts);

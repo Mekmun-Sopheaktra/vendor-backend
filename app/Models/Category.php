@@ -37,10 +37,9 @@ class Category extends Model
         return env('APP_URL').'/storage/'.$value;
     }
 
-    // You can use this code for many-to-many relation
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'category_products');
+        return $this->hasMany(Product::class);
     }
 
 }

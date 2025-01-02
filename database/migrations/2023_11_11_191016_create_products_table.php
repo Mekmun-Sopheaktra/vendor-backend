@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->text('description');
             $table->integer('price');
+            $table->integer('final_price')->nullable();
             $table->string('image')->nullable();
             $table->integer("volume")->nullable();
             $table->string("product_code")->unique();

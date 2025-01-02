@@ -24,18 +24,27 @@ class CategoryController extends Controller
     }
 
     //show
-    public function show($id, Request $request)
+    public function show($slug, Request $request)
     {
         // Get the per_page value from the request, default to 10 if not provided
         $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
+        // Get the search query from the request
+        $search = $request->query('search');
 
         // Find the category, if not found return an error
-        $category = Category::find($id);
+        $category = Category::query()->where('slug', $slug)->first();
         if (!$category) {
-            return $this->error('Category not found', 404);
+            return $this->failed('Category not found', 404);
         }
 
-        $products = $category->products()->paginate($perPage);
+        // Query products, apply search if the search term is provided
+        $productsQuery = $category->products();
+
+        if ($search) {
+            $productsQuery->where('title', 'like', '%' . $search . '%');
+        }
+
+        $products = $productsQuery->paginate($perPage);
 
         return $this->success([
             'category' => $category,
