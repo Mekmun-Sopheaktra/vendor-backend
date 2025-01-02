@@ -17,7 +17,6 @@ class BasketBuyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'products_id' => 'required|array',
             'vendor_id' => 'required',
             'address' => 'required|string',
             'transaction_method' => 'required|in:cod,paypal',

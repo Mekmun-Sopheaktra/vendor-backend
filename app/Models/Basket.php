@@ -11,6 +11,7 @@ class Basket extends Model
     use HasFactory;
 
     protected $fillable = [
+        'vendor_id',
         'user_id',
         'product_id',
         'count',
@@ -25,5 +26,10 @@ class Basket extends Model
     public function User(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function Vendor(): BelongsTo
+    {
+        return $this->belongsTo(Vendor::class);
     }
 }

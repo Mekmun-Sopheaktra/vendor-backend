@@ -24,8 +24,9 @@ class BasketController extends Controller
     {
         $delivery_fee = 2.5;
         $baskets = auth()->user()->baskets()
-            ->where('status', 'created')
-            ->with('product')->get();
+            ->whereIn('status', ['created', 'pending_payment'])
+            ->with('product')
+            ->get();
 
         // Group baskets by vendor
         $groupedBaskets = $baskets->groupBy(function ($basket) {
@@ -86,6 +87,7 @@ class BasketController extends Controller
             $existingBasket->save();
         } else {
             Basket::query()->create([
+                'vendor_id' => Product::query()->find($request['product'])->vendor_id,
                 'user_id' => $userId,
                 'product_id' => $request['product'],
                 'count' => $request['count'],
@@ -160,7 +162,7 @@ class BasketController extends Controller
         $data = [
             'total' => $totalPrice,
             'vendor_id' => $vendor_id,
-            'products_id' => $basketItems->pluck('product_id')->toArray(),
+            'basket' => $basketItems,
         ];
 
         // Return a success response
@@ -170,8 +172,13 @@ class BasketController extends Controller
     public function buy(BasketBuyRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $productIds = $validated['products_id']; // Array of product IDs
         $vendorId = $validated['vendor_id'];
+
+        // Fetch all products in the basket for the user and the selected vendor
+        $productIds = auth()->user()->baskets()
+            ->where('status', 'pending_payment')
+            ->where('vendor_id', $vendorId)
+            ->pluck('product_id');
 
         //check products is already paid in the basket
         $paidProducts = auth()->user()->baskets()->whereIn('product_id', $productIds)->where('status', 'paid')->get();

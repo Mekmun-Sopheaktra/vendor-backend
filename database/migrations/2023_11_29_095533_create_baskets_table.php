@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('baskets', function (Blueprint $table) {
             $table->id();
 
+            $table->foreignId('vendor_id');
             $table->foreignId('user_id');
             $table->foreignId('product_id');
 
