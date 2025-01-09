@@ -30,8 +30,6 @@ class VendorDashboardController extends Controller
             $userId = auth()->id();
             //get vendor id
             $vendorId = auth()->user()->vendor->id;
-            logger($vendorId);
-
             $total_order = Order::query()->where('user_id', $userId)->count();
 
             $total_revenue = Order::query()->where('user_id', $userId)->sum('amount');

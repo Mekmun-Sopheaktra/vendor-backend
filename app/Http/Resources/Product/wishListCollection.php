@@ -17,10 +17,11 @@ class wishListCollection extends ResourceCollection
                 'title' => $product->title,
                 'description' => $product->description,
                 'price' => $product->price,
+                'final_price' => $product->final_price,
+                'discount' => $product->discount,
                 'image' => $product->image,
-                'likes' => 10,
+                'category' => $product->category->name ?? null,
                 'isLike' => true,
-                'rate' => 3.5,
             ];
         });
 

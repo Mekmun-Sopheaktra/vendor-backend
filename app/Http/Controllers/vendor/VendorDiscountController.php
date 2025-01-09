@@ -5,6 +5,7 @@ namespace App\Http\Controllers\vendor;
 use App\Constants\DiscountConstants;
 use App\Http\Controllers\Controller;
 use App\Models\Discount;
+use App\Models\Product;
 use App\Traits\BaseApiResponse;
 use Exception;
 use Illuminate\Http\Request;
@@ -146,6 +147,9 @@ class VendorDiscountController extends Controller
 
             // Create the discount
             $discount = Discount::create($validatedData);
+            $product = Product::find($validatedData['product_id']);
+            $product->discount = $validatedData['discount'];
+            $product->save();
 
             // Get discount with product
             $discount = Discount::with('product')->find($discount->id);

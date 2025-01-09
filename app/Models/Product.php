@@ -92,4 +92,10 @@ class Product extends Model
     {
         return $this->hasMany(Discount::class);
     }
+
+    //like_products table relation
+    public function likeProducts()
+    {
+        return $this->hasMany(LikeProducts::class);
+    }
 }

@@ -56,7 +56,7 @@ class ProductSeeder extends Seeder
                 'gender' => 'Unisex',
                 'inventory' => 30,
                 'view_count' => 40,
-                'discount' => 10, // 10% discount
+                'discount' => 0, // 10% discount
                 'priority' => 'recommended',
                 'category_id' => 1,
                 'created_at' => now(),
@@ -78,7 +78,7 @@ class ProductSeeder extends Seeder
                 'gender' => 'Unisex',
                 'inventory' => 30,
                 'view_count' => 40,
-                'discount' => 15, // 15% discount
+                'discount' => 0, // 15% discount
                 'priority' => 'trending',
                 'category_id' => 1,
                 'created_at' => now(),
@@ -166,7 +166,7 @@ class ProductSeeder extends Seeder
                 'gender' => 'Unisex',
                 'inventory' => 10,
                 'view_count' => 10,
-                'discount' => 5, // 5% discount
+                'discount' => 0, // 5% discount
                 'priority' => 'upcoming',
                 'category_id' => 1,
                 'created_at' => now(),
@@ -188,7 +188,7 @@ class ProductSeeder extends Seeder
                 'gender' => 'Unisex',
                 'inventory' => 10,
                 'view_count' => 10,
-                'discount' => 5, // 5% discount
+                'discount' => 0, // 5% discount
                 'priority' => 'upcoming',
                 'category_id' => 1,
                 'created_at' => now(),

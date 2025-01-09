@@ -121,7 +121,6 @@ class ProductController extends Controller
             ->limit(5) // Limit the number of related products
             ->get();
 
-        logger($relatedProducts);
 
         $discount = Discount::query()
             ->where('status', 1)
@@ -275,7 +274,7 @@ class ProductController extends Controller
     public function latestProducts(Request $request)
     {
         $sortOrder = $request->query('order', 'desc'); // Default to descending
-        $products = Product::orderBy('created_at', $sortOrder)->where('status', true)->limit(5)->get();
+        $products = Product::orderBy('created_at', $sortOrder)->where('status', true)->limit(4)->get();
 
         return $this->success($products);
     }
@@ -370,4 +369,80 @@ class ProductController extends Controller
 
         return $this->success($newArrivalProducts);
     }
+    public function promotionProducts(Request $request)
+    {
+        $perPage = $request->query('per_page', 10); // Default to 10 items per page
+        $search = $request->query('search', null); // Search keyword
+        $filter = $request->query('filter', 'all'); // Filter: all, discount, compound, or compound_discount
+
+        // Initialize query
+        $query = Product::query()
+            ->where('status', true)
+            ->with(['discount'])
+            ->where(function ($query) {
+                $query->where('discount', '>', 0) // Products with discounts
+                ->orWhere('is_compound_product', true); // Or compound products
+            });
+
+        // Apply search filter
+        if (!empty($search)) {
+            $query->where(function ($subQuery) use ($search) {
+                $subQuery->where('name', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Apply product type filter
+        if ($filter === 'discount') {
+            $query->where('discount', '>', 0);
+        } elseif ($filter === 'compound') {
+            $query->where('is_compound_product', true);
+        } elseif ($filter === 'compound_discount') {
+            $query->where('discount', '>', 0)
+                ->where('is_compound_product', true);
+        }
+
+        $query->orderBy('discount', 'desc'); // Sort by discount
+
+        // Fetch the results and apply mapping
+        $products = $query->get()->map(function ($product) {
+            $product->final_price = $product->price - ($product->price * $product->discount / 100);
+
+            // Determine product type
+            if ($product->discount > 0 && $product->is_compound_product) {
+                $product->product_type = 'compound_discount'; // Both discount and compound
+            } elseif ($product->discount > 0) {
+                $product->product_type = 'discount';
+            } elseif ($product->is_compound_product) {
+                $product->product_type = 'compound';
+            } else {
+                $product->product_type = 'none'; // Fallback, should not occur
+            }
+
+            return $product;
+        });
+
+        // Paginate the mapped results manually
+        $paginatedProducts = $this->paginateCollection($products, $perPage);
+
+        return $this->success($paginatedProducts);
+    }
+
+    /**
+     * Paginate a collection manually.
+     */
+    protected function paginateCollection($collection, $perPage)
+    {
+        $page = request('page', 1); // Get the current page or default to 1
+        $total = $collection->count();
+        $results = $collection->slice(($page - 1) * $perPage, $perPage)->values();
+
+        return new \Illuminate\Pagination\LengthAwarePaginator(
+            $results,
+            $total,
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+    }
+
 }

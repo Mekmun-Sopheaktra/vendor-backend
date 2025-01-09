@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\v1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Product\wishListCollection;
+use App\Models\Discount;
 use App\Models\LikeProducts;
 use App\Models\Product;
 use App\Traits\BaseApiResponse;
@@ -38,7 +39,7 @@ class LikeController extends Controller
 
         //query product to get the updated likes count
 
-        return $this->success($product, 'Success', 'Product liked successfully');
+        return $this->success($like, 'Success', 'Product liked successfully');
     }
 
     public function wishlist(Request $request): JsonResponse
@@ -52,22 +53,44 @@ class LikeController extends Controller
         }
 
         $perPage = $request->has('per_page') ? (int) $request->input('per_page') : 15;
-        $currentPage = $request->has('page') ? (int) $request->input('page') : 1;
 
-        Paginator::currentPageResolver(function () use ($currentPage) {
-            return $currentPage;
+        // Fetch active discounts keyed by product_id
+        $discounts = Discount::query()
+            ->where('status', 1)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->get()
+            ->keyBy('product_id');
+
+        // Log the keys of the discounts collection to verify if product_id matches
+        // Paginate the liked products
+        $paginatedProducts = $productsQuery->paginate($perPage);
+
+        // Transform the products collection
+        $paginatedProducts->getCollection()->transform(function ($item) use ($discounts) {
+            $product = $item->product; // Nested product object
+
+            // Check if a discount exists for the product
+            if ($discounts->has($product->id)) {
+                $discount = $discounts->get($product->id); // Get the individual discount
+                $product->discount = $discount->discount;
+                $product->final_price = $product->price - ($product->price * $discount->discount / 100);
+            } else {
+                $product->discount = null;
+                $product->final_price = $product->price;
+            }
+
+            return $item;
         });
 
-        $products = $productsQuery->paginate($perPage);
-
         $data = [
-            'products' => new wishListCollection($products),
+            'products' => new wishListCollection($paginatedProducts),
             'pagination' => [
-                'page_number' => $products->currentPage(),
-                'total_rows' => $products->total(),
-                'total_pages' => $products->lastPage(),
-                'has_previous_page' => $products->previousPageUrl() !== null,
-                'has_next_page' => $products->nextPageUrl() !== null,
+                'page_number' => $paginatedProducts->currentPage(),
+                'total_rows' => $paginatedProducts->total(),
+                'total_pages' => $paginatedProducts->lastPage(),
+                'has_previous_page' => $paginatedProducts->previousPageUrl() !== null,
+                'has_next_page' => $paginatedProducts->nextPageUrl() !== null,
             ],
         ];
 
