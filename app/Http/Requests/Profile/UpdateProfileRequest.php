@@ -20,6 +20,14 @@ class UpdateProfileRequest extends FormRequest
             'name' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'age' => 'nullable|integer',
+            'mobile' => 'nullable|string|max:255',
+            'vendor_name' => 'nullable|string|max:255',
+            'vendor_slug' => 'nullable|string|max:255',
+            'vendor_address' => 'nullable|string|max:255',
+            'vendor_description' => 'nullable|string|max:255',
+            'vendor_logo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'vendor_status' => 'nullable|string|max:255',
+            'vendor_paypal_client_id' => 'nullable|string|max:255',
         ];
     }
 }

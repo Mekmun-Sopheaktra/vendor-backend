@@ -14,6 +14,7 @@ class Order extends Model
         'vendor_id',
         'user_id',
         'status',
+        'phone',
         'address',
         'transaction_method',
         'transaction_id',

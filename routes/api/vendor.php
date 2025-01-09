@@ -12,13 +12,14 @@ use App\Http\Controllers\vendor\VendorDashboardController;
 use App\Http\Controllers\vendor\VendorDiscountController;
 use App\Http\Controllers\vendor\VendorOrderController;
 use App\Http\Controllers\vendor\VendorProductController;
+use App\Http\Controllers\vendor\VendorProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('vendor/login', [VendorAuthController::class, 'Login'])->name('api.vendor.login');
 
 Route::prefix('vendor')->middleware(['auth:sanctum', 'api.vendor'])->group(function () {
-    Route::get('profile', [ProfileController::class, 'index'])->name('api.vendor.profile');
-    Route::post('profile', [ProfileController::class, 'update'])->name('api.vendor.update.profile');
+    Route::get('profile', [VendorProfileController::class, 'index'])->name('api.vendor.profile');
+    Route::post('profile', [VendorProfileController::class, 'update'])->name('api.vendor.update.profile');
     Route::get('dashboard', [VendorDashboardController::class, 'index'])->name('api.vendor.home');
 
     Route::prefix('search')->group(function () {
