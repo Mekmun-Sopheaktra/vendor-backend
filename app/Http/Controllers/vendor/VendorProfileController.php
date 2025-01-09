@@ -57,8 +57,8 @@ class VendorProfileController extends Controller
         $vendor->status = $request->vendor_status;
         $vendor->paypal_client_id = $request->vendor_paypal_client_id;
         //store image
-        if ($request->hasFile('vendor_logo')) {
-            $vendor->logo = $request->file('vendor_logo')->store('image', 'public');
+        if ($request->hasFile('image')) {
+            $vendor->logo = $request->file('image')->store('image', 'public');
         }
         $vendor->save();
 
