@@ -387,7 +387,7 @@ class ProductController extends Controller
         // Apply search filter
         if (!empty($search)) {
             $query->where(function ($subQuery) use ($search) {
-                $subQuery->where('name', 'like', '%' . $search . '%');
+                $subQuery->where('title', 'like', '%' . $search . '%');
             });
         }
 
