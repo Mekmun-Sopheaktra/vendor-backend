@@ -167,6 +167,7 @@ class BasketController extends Controller
                     ->from('products')
                     ->where('vendor_id', $vendor_id);
             })
+            ->with('product') // Load product relationship
             ->get();
 
         // Check if the basket is empty for the selected vendor
@@ -189,11 +190,22 @@ class BasketController extends Controller
 
         // Calculate the total price from the products table
         $totalPrice = $basketItems->sum(function ($item) use ($discounts) {
+            // Check if there's a discount for the product
             if ($discounts->has($item->product_id)) {
                 $discount = $discounts->get($item->product_id);
-                return $item->product->price - ($item->product->price * $discount->discount / 100);
+
+                // Calculate the discounted price
+                $discountedPrice = $item->product->price - ($item->product->price * $discount->discount / 100);
+
+                // Set additional properties for final_price and discount
+                $item->product->final_price = $discountedPrice;
+                $item->product->discount = $discount;
+
+                // Return the discounted total price for the item
+                return $discountedPrice * $item->count;
             } else {
-                return $item->product->price;
+                // No discount: return the regular total price for the item
+                return $item->product->price * $item->count;
             }
         });
 
