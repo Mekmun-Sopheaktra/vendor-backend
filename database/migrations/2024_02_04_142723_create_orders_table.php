@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('vendor_id');
 
             //phone number
-            $table->string('phone')->unique();
+            $table->string('phone');
             $table->text('address');
             //transaction method
             $table->enum('transaction_method', ['cod', 'paypal'])->nullable();

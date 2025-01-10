@@ -21,7 +21,7 @@ class BasketBuyRequest extends FormRequest
             'address' => 'required|string',
             'phone' => 'required|string',
             'transaction_method' => 'required|in:cod,paypal',
-            'transaction_id' => 'required_if:transaction_method,paypal|string',
+            'transaction_id' => 'required_if:transaction_method,paypal',
             'amount' => 'required_if:transaction_method,paypal|numeric',
         ];
     }
