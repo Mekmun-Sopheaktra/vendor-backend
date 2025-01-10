@@ -28,7 +28,7 @@ class OrderController extends Controller
     protected function getOrdersByStatus()
     {
         return auth()->user()->orders()
-            ->with('products.product')
+            ->with('products')
             ->get()
             ->map(function ($order) {
                 return [
