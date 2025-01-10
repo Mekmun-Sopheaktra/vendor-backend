@@ -7,6 +7,7 @@ use App\Http\Requests\Basket\BasketBuyRequest;
 use App\Http\Requests\Basket\BasketRequest;
 use App\Http\Resources\Basket\BasketResource;
 use App\Models\Basket;
+use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
@@ -33,22 +34,41 @@ class BasketController extends Controller
             return $basket->product->vendor_id;
         });
 
+        $discounts = Discount::query()
+            ->where('status', 1)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->get()
+            ->keyBy('product_id');
+
+        //add final price to the product if discount is available
+        $baskets->each(function ($basket) use ($discounts) {
+            if ($discounts->has($basket->product_id)) {
+                $discount = $discounts->get($basket->product_id);
+                $basket->product->final_price = $basket->product->price - ($basket->product->price * $discount->discount / 100);
+                $basket->product->discount = $discount;
+            } else {
+                $basket->product->final_price = $basket->product->price;
+            }
+        });
+
+        //amount after discount for each product in the basket
+        $baskets->each(function ($basket) {
+            $basket->amount = $basket->product->final_price * $basket->count;
+        });
+
         // Calculate the total cart value
         $subtotal = $baskets->sum(function ($basket) {
-            return $basket->product->price * $basket->count;
+            return $basket->product->final_price * $basket->count;
         });
 
         // Transform grouped data
         $groupedData = $groupedBaskets->map(function ($baskets, $vendorId) {
             return [
                 'summary' => [
-                    'subtotal' => $baskets->sum(function ($basket) {
-                        return $basket->product->price * $basket->count;
-                    }),
-                    'delivery_fee' => 2.5,
                     'total' => $baskets->sum(function ($basket) {
-                        return $basket->product->price * $basket->count;
-                    }) + 2.5,
+                        return $basket->product->final_price * $basket->count;
+                    }),
                 ],
                 'vendor' => Vendor::query()->find($vendorId),
                 'products' => BasketResource::collection($baskets),
@@ -58,9 +78,7 @@ class BasketController extends Controller
         return response()->json([
             'data' => $groupedData,
             'summary' => [
-                'subtotal' => $subtotal,
-                'delivery_fee' => $delivery_fee,
-                'total' => $subtotal ? $subtotal + $delivery_fee : 0,
+                'total' => $subtotal,
             ],
             'status' => true,
             'alert' => [
