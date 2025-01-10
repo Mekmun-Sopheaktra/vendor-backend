@@ -19,6 +19,7 @@ class BasketBuyRequest extends FormRequest
         return [
             'vendor_id' => 'required',
             'address' => 'required|string',
+            'phone' => 'required|string',
             'transaction_method' => 'required|in:cod,paypal',
             'transaction_id' => 'required_if:transaction_method,paypal|string',
             'amount' => 'required_if:transaction_method,paypal|numeric',

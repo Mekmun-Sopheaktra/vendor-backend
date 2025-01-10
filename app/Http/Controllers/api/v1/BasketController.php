@@ -213,6 +213,7 @@ class BasketController extends Controller
             'user_id' => auth()->id(),
             'vendor_id' => $vendorId,
             'address' => $validated['address'],
+            'phone' => $validated['phone'],
             'transaction_method' => $validated['transaction_method'],
             'transaction_id' => $validated['transaction_id'],
             'amount' => $validated['amount'],
