@@ -45,10 +45,11 @@ class OrderController extends Controller
     protected function mapProducts($products)
     {
         return $products->map(function ($product) {
+            logger($product);
             return [
-                'title' => $product?->product?->title,
-                'image' => $product?->product?->image,
-                'price' => $product?->product?->price,
+                'title' => $product?->title,
+                'image' => $product?->image,
+                'price' => $product?->price,
             ];
         });
     }
