@@ -174,6 +174,13 @@ class BasketController extends Controller
             return $this->failed(null, 'error', 'Your basket does not contain products from the selected vendor.');
         }
 
+        $discounts = Discount::query()
+            ->where('status', 1)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->get()
+            ->keyBy('product_id');
+
         // Update the status of the basket items to 'pending_payment'
         $basketItems->each(function ($item) {
             $item->status = 'pending_payment';
@@ -181,13 +188,18 @@ class BasketController extends Controller
         });
 
         // Calculate the total price from the products table
-        $totalPrice = Product::query()
-            ->where('vendor_id', $vendor_id)
-            ->whereIn('id', $basketItems->pluck('product_id'))
-            ->sum('price');
+        $totalPrice = $basketItems->sum(function ($item) use ($discounts) {
+            if ($discounts->has($item->product_id)) {
+                $discount = $discounts->get($item->product_id);
+                return $item->product->price - ($item->product->price * $discount->discount / 100);
+            } else {
+                return $item->product->price;
+            }
+        });
+
 
         $data = [
-            'total' => $totalPrice,
+            'amount' => $totalPrice,
             'vendor_id' => $vendor_id,
             'basket' => $basketItems,
         ];
