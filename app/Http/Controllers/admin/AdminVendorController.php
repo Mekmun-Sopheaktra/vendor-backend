@@ -20,7 +20,7 @@ class AdminVendorController extends Controller
         $perPage = $request->query('per_page', 10); // Default to 10 items per page
         $search = $request->query('search', null);
         //get all vendors that not have user_id
-        $vendors = Vendor::whereNull('user_id')
+        $vendors = Vendor::query()
             ->when($search, function ($query) use ($search) {
                 return $query->where('name', 'like', "%$search%");
             })

@@ -445,4 +445,26 @@ class ProductController extends Controller
         );
     }
 
+    //tags
+    public function tags()
+    {
+        $tags = Tag::query()->get();
+
+        return $this->success($tags);
+    }
+
+    //showTags
+    public function showTags($id)
+    {
+        $tag = Tag::find($id);
+
+        if (!$tag) {
+            return $this->failed(null, 'Tag not found', 'Tag not found', 404);
+        }
+
+        //attach products to tag
+        $tag->products = $tag->products()->paginate(10);
+
+        return $this->success($tag);
+    }
 }

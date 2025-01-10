@@ -30,6 +30,10 @@ Route::prefix('v1')->group(function () {
 });
 //product routes
 Route::prefix('v1/product')->group(function () {
+    //list all tags with products
+    Route::get('tag', [ProductController::class, 'tags'])->name('api.product.tags');
+    //show tag
+    Route::get('tag/{tag}', [ProductController::class, 'showTags'])->name('api.product.tag');
     //promotion products
     Route::get('promotion', [ProductController::class, 'promotionProducts'])->name('api.product.promotion');
     Route::get('latest', [ProductController::class, 'latestProducts'])->name('api.product.latest'); // Latest products
