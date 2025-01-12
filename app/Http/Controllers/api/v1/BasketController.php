@@ -244,10 +244,11 @@ class BasketController extends Controller
             return $this->failed($userBasket, 'Invalid Products', 'No valid products found in your basket', 422);
         }
 
-        // Mark selected products as paid
-        auth()->user()->baskets()->whereIn('product_id', $productIds)->update([
-            'status' => 'paid',
-        ]);
+        //update the basket status to paid
+        $userBasket->each(function ($basket) {
+            $basket->status = 'paid';
+            $basket->save();
+        });
 
         // Create an order
         $order = Order::create([
@@ -257,7 +258,7 @@ class BasketController extends Controller
             'address' => $validated['address'],
             'phone' => $validated['phone'],
             'transaction_method' => $validated['transaction_method'],
-            'transaction_id' => $validated['transaction_id'],
+            'transaction_id' => $validated['transaction_id'] ?? null,
             'amount' => $validated['amount'],
             'status' => 'created',
         ]);

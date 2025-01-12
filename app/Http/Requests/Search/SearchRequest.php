@@ -24,6 +24,7 @@ class SearchRequest extends FormRequest
             'page' => 'nullable|numeric|min:1',
             'title' => 'nullable|string|max:255',
             'volume' => 'nullable|string|max:255',
+            'latest' => 'nullable|boolean',
         ];
     }
 }

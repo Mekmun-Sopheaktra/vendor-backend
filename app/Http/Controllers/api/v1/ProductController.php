@@ -50,6 +50,11 @@ class ProductController extends Controller
             $productsQuery->where('price', '<=', $validatedData['max_price']);
         }
 
+        //latest get products by latest created in one week
+        if (!empty($validatedData['latest'])) {
+            $productsQuery->where('created_at', '>=', now()->subWeek());
+        }
+
         // Apply sorting
         if (!empty($validatedData['sort'])) {
             switch ($validatedData['sort']) {
