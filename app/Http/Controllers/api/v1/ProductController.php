@@ -26,22 +26,22 @@ class ProductController extends Controller
         $validatedData = $request->validated();
         $productsQuery = Product::query()->where('status', true);
 
-        // title
+        // Filter by title
         if (!empty($validatedData['title'])) {
             $productsQuery->where('title', 'like', '%' . $validatedData['title'] . '%');
         }
 
-        // volume
+        // Filter by volume
         if (!empty($validatedData['volume'])) {
             $productsQuery->where('volume', 'like', '%' . $validatedData['volume'] . '%');
         }
 
-        // Apply category filter
+        // Filter by category
         if (!empty($validatedData['categories_id'])) {
             $productsQuery->whereIn('id', explode(',', $validatedData['categories_id']));
         }
 
-        // Apply price range filters
+        // Filter by price range
         if (!empty($validatedData['min_price'])) {
             $productsQuery->where('price', '>=', $validatedData['min_price']);
         }
@@ -50,12 +50,14 @@ class ProductController extends Controller
             $productsQuery->where('price', '<=', $validatedData['max_price']);
         }
 
-        //latest get products by latest created in one week
-        if (!empty($validatedData['latest'])) {
+        // Filter latest products
+        $isLatest = false;
+        if (!empty($validatedData['latest']) && $validatedData['latest'] === 'true') {
             $productsQuery->where('created_at', '>=', now()->subWeek());
+            $isLatest = true;
         }
 
-        // Apply sorting
+        // Sorting
         if (!empty($validatedData['sort'])) {
             switch ($validatedData['sort']) {
                 case '0':
@@ -85,6 +87,7 @@ class ProductController extends Controller
         $products = $productsQuery->with(['category', 'tags', 'galleries'])
             ->paginate($perPage, ['*'], 'page', $page);
 
+        // Get active discounts
         $discounts = Discount::query()
             ->where('status', 1)
             ->where('start_date', '<=', now())
@@ -92,7 +95,7 @@ class ProductController extends Controller
             ->get()
             ->keyBy('product_id');
 
-        $products->getCollection()->transform(function ($product) use ($discounts) {
+        $products->getCollection()->transform(function ($product) use ($discounts, $isLatest) {
             if ($discounts->has($product->id)) {
                 $discount = $discounts->get($product->id);
                 $product->final_price = $product->price - ($product->price * $discount->discount / 100);
@@ -101,6 +104,9 @@ class ProductController extends Controller
                 $product->final_price = $product->price;
                 $product->discount = null;
             }
+
+            $product->latest = $isLatest;
+
             return $product;
         });
 
