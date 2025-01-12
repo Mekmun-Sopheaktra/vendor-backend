@@ -225,12 +225,6 @@ class BasketController extends Controller
             ->where('vendor_id', $vendorId)
             ->pluck('product_id');
 
-        //check products is already paid in the basket
-        $paidProducts = auth()->user()->baskets()->whereIn('product_id', $productIds)->where('status', 'paid')->get();
-        if (!$paidProducts->isEmpty()) {
-            return $this->failed($paidProducts, 'Invalid Products', 'Some products are already paid.', 422);
-        }
-
         // Fetch only products from the user's basket
         $userBasket = auth()->user()->baskets()->whereIn('product_id', $productIds)->get();
 
