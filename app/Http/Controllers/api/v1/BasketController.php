@@ -221,7 +221,7 @@ class BasketController extends Controller
 
         // Fetch all products in the basket for the user and the selected vendor
         $productIds = auth()->user()->baskets()
-            ->where('status', 'pending_payment')
+            ->where('status', 'created')
             ->where('vendor_id', $vendorId)
             ->pluck('product_id');
 
