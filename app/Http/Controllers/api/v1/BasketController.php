@@ -182,12 +182,6 @@ class BasketController extends Controller
             ->get()
             ->keyBy('product_id');
 
-        // Update the status of the basket items to 'pending_payment'
-        $basketItems->each(function ($item) {
-            $item->status = 'pending_payment';
-            $item->save();
-        });
-
         // Calculate the total price from the products table
         $totalPrice = $basketItems->sum(function ($item) use ($discounts) {
             // Check if there's a discount for the product
