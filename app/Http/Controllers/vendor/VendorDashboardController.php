@@ -28,22 +28,15 @@ class VendorDashboardController extends Controller
         try {
             // Current authenticated user
             $userId = auth()->id();
-            //get vendor id
+            // Get vendor id
             $vendorId = auth()->user()->vendor->id;
+
             $total_order = Order::query()->where('user_id', $userId)->count();
-
             $total_revenue = Order::query()->where('user_id', $userId)->sum('amount');
-
             $total_product = Product::query()->where('user_id', $userId)->count();
             $total_compound = Compound::query()->where('user_id', $userId)->count();
 
-            $allMonths = collect(range(1, 12))->map(function ($month) {
-                return [
-                    'date' => Carbon::createFromDate(null, $month)->format('M'),
-                    'total' => 0,
-                ];
-            });
-
+            // Fetch data for the chart
             $data = Order::query()
                 ->selectRaw('MONTH(created_at) as month, SUM(amount) as total')
                 ->where('vendor_id', $vendorId)
@@ -51,12 +44,14 @@ class VendorDashboardController extends Controller
                 ->groupBy('month')
                 ->pluck('total', 'month');
 
-            $orderChart = $allMonths->map(function ($monthData) use ($data) {
-                $month = (int)Carbon::parse($monthData['date'])->format('m');
-                $monthData['total'] = $data->get($month, 0);
-                return $monthData;
-            });
+            // Create order chart with formatted data
+            $orderChart = collect(range(1, 12))->reduce(function ($chart, $month) use ($data) {
+                $monthName = Carbon::createFromDate(null, $month)->format('F');
+                $chart[$monthName] = number_format($data->get($month, 0), 2);
+                return $chart;
+            }, []);
 
+            // Fetch top products
             $topProduct = Product::query()
                 ->selectRaw('products.id, products.title, SUM(order_products.count) as total')
                 ->join('order_products', 'products.id', '=', 'order_products.product_id')
