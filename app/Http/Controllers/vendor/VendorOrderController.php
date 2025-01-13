@@ -152,6 +152,7 @@ class VendorOrderController extends Controller
                         'product_title' => Product::find($orderProduct->product_id)->title ?? 'Unknown Product',
                         'price' => (float) $orderProduct->price,
                         'count' => (int) $orderProduct->count, // Assuming 'count' is the quantity field
+                        'discount' => (float) $orderProduct->discount,
                         'total' => (float) $orderProduct->price * $orderProduct->count,
                     ];
                 });
@@ -159,7 +160,6 @@ class VendorOrderController extends Controller
             // Include the order products in the order response
             $order->products_details = $orderProducts;
 
-            logger($order);
             // Format the response using a resource
             return $this->success(OrderResource::make($order), 'Order', 'Order details retrieved successfully');
         } catch (\Exception $e) {

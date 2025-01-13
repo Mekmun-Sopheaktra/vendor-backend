@@ -21,6 +21,8 @@ class OrderResource extends JsonResource
             'amount' => $this->amount, // Assuming a pivot table with 'price'
             'address' => $this->address, // Assuming an 'address' relationship in the Order model
             'phone' => $this->phone,
+            'transaction_method' => $this->transaction_method,
+            'transaction_id' => $this->transaction_id,
             'user' => [
                 'id' => $this->user->id,
                 'name' => $this->user->name,
