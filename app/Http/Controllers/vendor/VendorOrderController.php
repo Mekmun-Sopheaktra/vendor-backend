@@ -139,7 +139,7 @@ class VendorOrderController extends Controller
 
             // Retrieve the order details
             $order = Order::where('id', $order->id)
-                ->with(['products', 'user', 'address']) // Eager load relationships
+                ->with(['products', 'user']) // Eager load relationships
                 ->firstOrFail();
 
             // Get order products from the order_products table
