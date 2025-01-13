@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('order_id');
             $table->foreignId('product_id');
             $table->integer('count')->default(1);
+            $table->string('price')->nullable();
             $table->timestamps();
         });
     }

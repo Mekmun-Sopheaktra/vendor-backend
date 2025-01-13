@@ -19,7 +19,8 @@ return new class extends Migration
             $table->foreignId('product_id');
 
             $table->integer('count')->default(1);
-
+            //price of the product at the time of adding to the basket
+            $table->decimal('price', 10, 2)->nullable();
             $table->enum('status', ['created', 'pending_payment', 'paid', 'cancelled'])->default('created');
 
             $table->timestamps();

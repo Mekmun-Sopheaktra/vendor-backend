@@ -15,6 +15,7 @@ class Basket extends Model
         'user_id',
         'product_id',
         'count',
+        'price',
         'status',
     ];
 

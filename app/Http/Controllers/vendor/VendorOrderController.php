@@ -5,6 +5,7 @@ namespace App\Http\Controllers\vendor;
 use App\Constants\OrderConstants;
 use App\Constants\RoleConstants;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Order\OrderResource;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
@@ -69,7 +70,7 @@ class VendorOrderController extends Controller
                 // Filter by vendor's products
                 $query->whereIn('product_id', $store->products->pluck('id'));
             })
-                ->where('status', '!=', 'created') // Orders that are not in 'created' status
+                ->where('status', '!=', 'pending') // Orders that are not in 'created' status
                 ->with(['products', 'user', 'address']) // Eager load related products, user, and address
                 ->get();
 
@@ -90,24 +91,43 @@ class VendorOrderController extends Controller
 
             // Retrieve the vendor's store along with its products
             $store = Vendor::where('user_id', $vendor->id)
-                ->with('products')
-                ->firstOrFail(); // Using firstOrFail for better error handling
+                ->with('products') // Eager load products of the vendor
+                ->firstOrFail();
 
             // Check if the order is associated with the vendor's products
-            $orderProduct = OrderProduct::where('order_id', $order->id)
+            $isOrderAssociated = OrderProduct::where('order_id', $order->id)
                 ->whereIn('product_id', $store->products->pluck('id'))
-                ->first();
+                ->exists();
 
-            if (!$orderProduct) {
+            if (!$isOrderAssociated) {
                 return $this->failed(null, 'Error', 'The order is not associated with your products.');
             }
 
             // Retrieve the order details
             $order = Order::where('id', $order->id)
-                ->with(['products', 'user', 'address'])
-                ->first();
+                ->with(['products', 'user', 'address']) // Eager load relationships
+                ->firstOrFail();
 
-            return $this->success($order, 'Order', 'Order details retrieved successfully');
+            // Get order products from the order_products table
+            $orderProducts = OrderProduct::where('order_id', $order->id)
+                ->get()
+                ->map(function ($orderProduct) {
+                    return [
+                        'id' => $orderProduct->id,
+                        'product_id' => $orderProduct->product_id,
+                        'product_title' => Product::find($orderProduct->product_id)->title ?? 'Unknown Product',
+                        'price' => (float) $orderProduct->price,
+                        'count' => (int) $orderProduct->count, // Assuming 'count' is the quantity field
+                        'total' => (float) $orderProduct->price * $orderProduct->count,
+                    ];
+                });
+
+            // Include the order products in the order response
+            $order->products_details = $orderProducts;
+
+            logger($order);
+            // Format the response using a resource
+            return $this->success(OrderResource::make($order), 'Order', 'Order details retrieved successfully');
         } catch (\Exception $e) {
             Log::error('Error retrieving order: ' . $e->getMessage());
 

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\api\v1;
 use App\Constants\OrderConstants;
 use App\Constants\RoleConstants;
 use App\Http\Controllers\Controller;
+use App\Models\OrderProduct;
+use App\Models\Product;
 use App\Traits\BaseApiResponse;
 use Illuminate\Support\Facades\Log;
 
@@ -44,12 +46,29 @@ class OrderController extends Controller
 
     protected function mapProducts($products)
     {
-        return $products->map(function ($product) {
-            logger($product);
+        // Get products from order_products table
+        $products = OrderProduct::query()
+            ->whereIn('product_id', $products->pluck('id'))
+            ->get();
+
+        // Get the original products
+        $originalProducts = Product::query()
+            ->whereIn('id', $products->pluck('product_id'))
+            ->get()
+            ->keyBy('id'); // Key by ID for quick lookup
+
+        return $products->map(function ($product) use ($originalProducts) {
+            $originalProduct = $originalProducts->get($product->product_id); // Match with originalProducts by ID
+            $price = $product->final_price ?? $originalProduct->price; // Get final_price from order_products or price from originalProducts
+            $amount = $price * $product->count;
             return [
-                'title' => $product?->title,
-                'image' => $product?->image,
-                'price' => $product?->price,
+                'id' => $product->product_id,
+                'product_code' => $originalProduct ? $originalProduct->product_code : null, // Get product_code from originalProducts
+                'title' => $originalProduct ? $originalProduct->title : null, // Get title from originalProducts
+                'unit_price' => $price, // Get final_price from order_products or price from originalProducts
+                'count' => $product->count,
+                'total' => $amount,
+                'discount' => $originalProduct ? $originalProduct->discount : null, // Get discount from originalProducts
             ];
         });
     }

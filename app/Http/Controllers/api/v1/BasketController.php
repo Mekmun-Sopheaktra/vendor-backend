@@ -257,6 +257,7 @@ class BasketController extends Controller
                 'order_id' => $order->id,
                 'product_id' => $basketItem->product_id,
                 'count' => $basketItem->count, // Assuming count exists in the basket
+                'price' => $basketItem->product->final_price ?? $basketItem->product->price,
             ]);
         }
 
