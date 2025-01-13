@@ -32,7 +32,7 @@ class VendorOrderController extends Controller
                 // Filter products by vendor's products
                 $query->whereIn('product_id', $store->products->pluck('id'));
             })
-                ->where('status', 'created')
+                ->where('status', OrderConstants::PENDING)
                 ->with(['products', 'user', 'address']) // Eager load related products, user, and address
                 ->get();
 
