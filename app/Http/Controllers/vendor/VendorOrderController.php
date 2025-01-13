@@ -52,6 +52,17 @@ class VendorOrderController extends Controller
                 });
             });
 
+            //total order count
+            $total_order_count = Order::whereHas('products', function ($query) use ($store) {
+                // Filter products by vendor's products
+                $query->whereIn('product_id', $store->products->pluck('id'));
+            })
+                ->where('status', OrderConstants::PENDING)
+                ->count();
+
+            //add total order count to the response
+            $orders->total_order_count = $total_order_count;
+
             return $this->success($orders, 'Order', 'Order list completed');
         } catch (\Exception $e) {
             Log::error('Error retrieving orders: ' . $e->getMessage());
@@ -85,6 +96,17 @@ class VendorOrderController extends Controller
                 })
                 ->with(['products', 'user', 'address']) // Eager load related products, user, and address
                 ->paginate($per_page); // Paginate with 10 results per page
+
+            //total order count
+            $total_order_count = Order::whereHas('products', function ($query) use ($store) {
+                // Filter products by vendor's products
+                $query->whereIn('product_id', $store->products->pluck('id'));
+            })
+                ->where('status', '!=', 'pending')
+                ->count();
+
+            //add total order count to the response
+            $orders->total_order_count = $total_order_count;
 
             return $this->success($orders, 'Order', 'Order list completed');
         } catch (\Exception $e) {
