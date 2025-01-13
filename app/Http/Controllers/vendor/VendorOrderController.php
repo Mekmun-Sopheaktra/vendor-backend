@@ -41,7 +41,7 @@ class VendorOrderController extends Controller
                     return $query->where('id', 'like', '%' . $search . '%');
                 })
                 ->where('status', OrderConstants::PENDING)
-                ->with(['products', 'user', 'address']) // Eager load related products, user, and address
+                ->with(['products', 'user']) // Eager load related products, user, and address
                 ->paginate($per_page); // Paginate with 10 results per page
 
             // Format the orders with pivot data (e.g., count of products)
@@ -94,7 +94,7 @@ class VendorOrderController extends Controller
                 ->when($search, function ($query, $search) {
                     return $query->where('id', 'like', '%' . $search . '%');
                 })
-                ->with(['products', 'user', 'address']) // Eager load related products, user, and address
+                ->with(['products', 'user']) // Eager load related products, user, and address
                 ->paginate($per_page); // Paginate with 10 results per page
 
             //total order count
