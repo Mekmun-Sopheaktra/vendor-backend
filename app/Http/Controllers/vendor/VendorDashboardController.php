@@ -39,7 +39,7 @@ class VendorDashboardController extends Controller
 
             $allMonths = collect(range(1, 12))->map(function ($month) {
                 return [
-                    'date' => Carbon::createFromDate(null, $month)->format('m/d/Y'),
+                    'date' => Carbon::createFromDate(null, $month)->format('M'),
                     'total' => 0,
                 ];
             });
