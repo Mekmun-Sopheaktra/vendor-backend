@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\vendor;
 
+use App\Constants\OrderConstants;
 use App\Constants\RoleConstants;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
@@ -136,7 +137,7 @@ class VendorOrderController extends Controller
             }
 
             // Update the order status to approved
-            $order->status = 'success';
+            $order->status = OrderConstants::SUCCESS;
             $order->save();
 
             return $this->success($order, 'Order', 'Order approved successfully');

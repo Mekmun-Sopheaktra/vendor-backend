@@ -248,7 +248,7 @@ class BasketController extends Controller
             'transaction_method' => $validated['transaction_method'],
             'transaction_id' => $validated['transaction_id'] ?? null,
             'amount' => $validated['amount'],
-            'status' => 'created',
+            'status' => 'pending',
         ]);
 
         // Link products to the order

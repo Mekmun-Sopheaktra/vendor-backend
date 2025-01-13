@@ -4,7 +4,7 @@ namespace App\Constants;
 
 class OrderConstants
 {
-    public const ACTIVE = 'active';
+    public const PENDING = 'pending';
 
     public const CREATED = 'created';
 
@@ -20,9 +20,9 @@ class OrderConstants
             case 1:
                 return self::SUCCESS;
             case 2:
-                return self::FAILED;
+                return self::CANCELLED;
             default:
-                return self::ACTIVE;
+                return self::PENDING;
         }
     }
 
@@ -31,10 +31,10 @@ class OrderConstants
         switch ($status) {
             case self::SUCCESS:
                 return 1;
-            case self::FAILED:
+            case self::CANCELLED:
                 return 2;
             default:
-                return self::SUCCESS;
+                return self::PENDING;
         }
     }
 }
