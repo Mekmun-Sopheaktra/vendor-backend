@@ -37,11 +37,43 @@ class VendorDashboardController extends Controller
             $total_product = Product::query()->where('user_id', $userId)->count();
             $total_compound = Compound::query()->where('user_id', $userId)->count();
 
+            $allMonths = collect(range(1, 12))->map(function ($month) {
+                return [
+                    'date' => Carbon::createFromDate(null, $month)->format('m/d/Y'),
+                    'total' => 0,
+                ];
+            });
+
+            $data = Order::query()
+                ->selectRaw('MONTH(created_at) as month, SUM(amount) as total')
+                ->where('vendor_id', $vendorId)
+                ->whereYear('created_at', Carbon::now()->year)
+                ->groupBy('month')
+                ->pluck('total', 'month');
+
+            $orderChart = $allMonths->map(function ($monthData) use ($data) {
+                $month = (int)Carbon::parse($monthData['date'])->format('m');
+                $monthData['total'] = $data->get($month, 0);
+                return $monthData;
+            });
+
+            $topProduct = Product::query()
+                ->selectRaw('products.id, products.title, SUM(order_products.count) as total')
+                ->join('order_products', 'products.id', '=', 'order_products.product_id')
+                ->join('orders', 'order_products.order_id', '=', 'orders.id')
+                ->where('orders.vendor_id', $vendorId)
+                ->groupBy('products.id')
+                ->orderByDesc('total')
+                ->limit(5)
+                ->get();
+
             return $this->success([
                 'total_order' => $total_order,
                 'total_revenue' => $total_revenue,
                 'total_product' => $total_product,
                 'total_compound' => $total_compound,
+                'order_chart' => $orderChart,
+                'top_product' => $topProduct
             ], 'Dashboard', 'Dashboard fetched successfully');
         } catch (Exception $exception) {
             return $this->failed($exception->getMessage(), 'Error', 'Error from server');
