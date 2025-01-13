@@ -12,16 +12,19 @@ use App\Models\Product;
 use App\Models\Vendor;
 use App\Traits\BaseApiResponse;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
 
 class VendorOrderController extends Controller
 {
     use BaseApiResponse;
 
-    public function index()
+    public function index(Request $request)
     {
         try {
             // Get the authenticated vendor
             $vendor = auth()->user();
+            $search = $request->get('search'); // Retrieve the 'search' query parameter
+            $per_page = $request->get('per_page', 10); // Retrieve the 'per_page' query parameter
 
             // Retrieve the vendor's store along with its products
             $store = Vendor::where('user_id', $vendor->id)
@@ -33,9 +36,13 @@ class VendorOrderController extends Controller
                 // Filter products by vendor's products
                 $query->whereIn('product_id', $store->products->pluck('id'));
             })
+                //search order id
+                ->when($search, function ($query, $search) {
+                    return $query->where('id', 'like', '%' . $search . '%');
+                })
                 ->where('status', OrderConstants::PENDING)
                 ->with(['products', 'user', 'address']) // Eager load related products, user, and address
-                ->paginate(10); // Paginate with 10 results per page
+                ->paginate($per_page); // Paginate with 10 results per page
 
             // Format the orders with pivot data (e.g., count of products)
             $orders->getCollection()->each(function ($order) {
@@ -54,25 +61,30 @@ class VendorOrderController extends Controller
     }
 
     //history
-    public function history()
+    public function history(Request $request)
     {
         try {
             // Get the authenticated vendor
             $vendor = auth()->user();
+            $search = $request->input('search'); // Retrieve the 'search' query parameter
+            $per_page = $request->input('per_page', 10); // Retrieve the 'per_page' query parameter
 
             // Retrieve the vendor's store along with its products
             $store = Vendor::where('user_id', $vendor->id)
                 ->with('products') // Eager load the products of the vendor
                 ->firstOrFail(); // Using firstOrFail for better error handling
 
-            // Fetch the orders associated with the vendor's products (excluding 'pending' status) with pagination
+            // Fetch the orders associated with the vendor's products (excluding 'pending' status) with pagination and search
             $orders = Order::whereHas('products', function ($query) use ($store) {
                 // Filter by vendor's products
                 $query->whereIn('product_id', $store->products->pluck('id'));
             })
                 ->where('status', '!=', 'pending') // Exclude 'pending' status
+                ->when($search, function ($query, $search) {
+                    return $query->where('id', 'like', '%' . $search . '%');
+                })
                 ->with(['products', 'user', 'address']) // Eager load related products, user, and address
-                ->paginate(10); // Paginate with 10 results per page
+                ->paginate($per_page); // Paginate with 10 results per page
 
             return $this->success($orders, 'Order', 'Order list completed');
         } catch (\Exception $e) {
