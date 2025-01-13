@@ -28,17 +28,17 @@ class VendorOrderController extends Controller
                 ->with('products') // Ensure you have a 'products' relationship in the Vendor model
                 ->firstOrFail(); // Using firstOrFail for better error handling
 
-            // Fetch the orders associated with the vendor's products
+            // Fetch the orders associated with the vendor's products with pagination
             $orders = Order::whereHas('products', function ($query) use ($store) {
                 // Filter products by vendor's products
                 $query->whereIn('product_id', $store->products->pluck('id'));
             })
                 ->where('status', OrderConstants::PENDING)
                 ->with(['products', 'user', 'address']) // Eager load related products, user, and address
-                ->get();
+                ->paginate(10); // Paginate with 10 results per page
 
             // Format the orders with pivot data (e.g., count of products)
-            $orders->each(function ($order) {
+            $orders->getCollection()->each(function ($order) {
                 $order->products->each(function ($product) {
                     // Access pivot data like count, etc.
                     $product->pivot->count = $product->pivot->count; // Add this field to the result if needed
@@ -65,14 +65,14 @@ class VendorOrderController extends Controller
                 ->with('products') // Eager load the products of the vendor
                 ->firstOrFail(); // Using firstOrFail for better error handling
 
-            // Fetch the orders associated with the vendor's products (excluding 'created' status)
+            // Fetch the orders associated with the vendor's products (excluding 'pending' status) with pagination
             $orders = Order::whereHas('products', function ($query) use ($store) {
                 // Filter by vendor's products
                 $query->whereIn('product_id', $store->products->pluck('id'));
             })
-                ->where('status', '!=', 'pending') // Orders that are not in 'created' status
+                ->where('status', '!=', 'pending') // Exclude 'pending' status
                 ->with(['products', 'user', 'address']) // Eager load related products, user, and address
-                ->get();
+                ->paginate(10); // Paginate with 10 results per page
 
             return $this->success($orders, 'Order', 'Order list completed');
         } catch (\Exception $e) {
