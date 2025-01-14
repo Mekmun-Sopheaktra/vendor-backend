@@ -199,6 +199,11 @@ class VendorDiscountController extends Controller
             //get discount with product
             $discount = Discount::with('product')->find($discount->id);
 
+            //also update in products table
+            $product = Product::find($validatedData['product_id']);
+            $product->discount = $validatedData['discount'];
+            $product->save();
+
             return $this->success($discount, 'Discount', 'Discount updated successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Handle validation errors
@@ -216,6 +221,27 @@ class VendorDiscountController extends Controller
             $discount->delete();
 
             return $this->success(null, 'Discount', 'Discount deleted successfully.');
+        } catch (Exception $e) {
+            return $this->failed(null, 'Error', $e->getMessage());
+        }
+    }
+
+    //check if discount is expired or not if expired then update the status and products table discount
+    public function checkDiscountStatus()
+    {
+        try {
+            $discounts = Discount::where('end_date', '<', now())->get();
+
+            foreach ($discounts as $discount) {
+                $discount->status = false;
+                $discount->save();
+
+                $product = Product::find($discount->product_id);
+                $product->discount = 0;
+                $product->save();
+            }
+
+            return $this->success(null, 'Discount', 'Discount status checked successfully.');
         } catch (Exception $e) {
             return $this->failed(null, 'Error', $e->getMessage());
         }
