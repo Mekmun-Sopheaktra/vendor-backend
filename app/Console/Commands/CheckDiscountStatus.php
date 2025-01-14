@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\Discount;
 use App\Models\Product;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class CheckDiscountStatus extends Command
 {
@@ -39,6 +40,8 @@ class CheckDiscountStatus extends Command
                 $product->discount = 0;
                 $product->save();
             }
+            //log the status to scheduler log
+            Log::info('Discount status checked and updated successfully : ' . now() . ' - ' . count($discounts) . ' discounts updated.');
 
             $this->info('Discount status checked and updated successfully.');
         } catch (Exception $e) {
