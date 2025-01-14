@@ -82,7 +82,7 @@ class VendorDiscountController extends Controller
             $discounts = Discount::where('start_date', '<=', now())
                 ->where('title', 'like', '%' . $search . '%')
                 ->where('end_date', '>=', now())
-                ->where('status', true)
+//                ->where('status', true)
                 ->paginate($perPage);
 
             return $this->success($discounts, 'Discount', 'Active discount list retrieved successfully.');
