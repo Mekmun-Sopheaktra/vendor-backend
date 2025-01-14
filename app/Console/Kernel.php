@@ -12,7 +12,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('discount:check-status')->daily(); // Run the command daily
+        $schedule->command('discount:check-status')->everyMinute();
     }
 
     /**
