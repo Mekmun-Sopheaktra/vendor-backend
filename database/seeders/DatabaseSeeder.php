@@ -61,7 +61,7 @@ class DatabaseSeeder extends Seeder
             'logo' => 'https://picsum.photos/200/300',
             'banner' => 'vendor banner',
             'email' => 'vendor@shop.com',
-            'status' => 'active',
+            'status' => 1,
         ]);
 
         Vendor::factory()->create([
@@ -74,7 +74,7 @@ class DatabaseSeeder extends Seeder
             'logo' => 'https://picsum.photos/200/300',
             'banner' => 'vendor banner',
             'email' => 'second_vendor@shop.com',
-            'status' => 'active',
+            'status' => 1,
         ]);
     }
 }

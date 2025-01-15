@@ -23,6 +23,8 @@ class VendorController extends Controller
         logger($search);
         $vendors = Vendor::query()
             ->where('name', 'like', "%$search%")
+            //status = active
+            ->where('status', true)
             ->paginate($perPage);
 
         return $this->success($vendors, 'Vendors retrieved successfully');

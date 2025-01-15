@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('logo')->nullable();
             $table->string('email')->nullable();
             $table->string('banner')->nullable();
-            $table->string('status')->default(VendorStatusConstants::PENDING);
+            $table->string('status')->default(0);
             $table->string('purpose')->nullable();
             $table->string('paypal_client_id')->nullable();
             $table->timestamps();
