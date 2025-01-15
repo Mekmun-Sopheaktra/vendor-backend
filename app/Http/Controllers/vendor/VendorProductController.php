@@ -156,8 +156,10 @@ class VendorProductController extends Controller
                 $product->discount = $discount;
             }
 
-            return $this->success($product, 'Product retrieved successfully');
+            // Get the first tag's ID
+            $product->tag_id = $product->tags->first()?->id ?? null;
 
+            return $this->success($product, 'Product retrieved successfully');
         } catch (\Exception $e) {
             return $this->failed(null, 'An error occurred', $e->getMessage(), 500);
         }

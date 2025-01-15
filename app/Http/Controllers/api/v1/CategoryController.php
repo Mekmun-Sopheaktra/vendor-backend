@@ -111,6 +111,11 @@ class CategoryController extends Controller
 
         $products->load('tags');
 
+        //sorting products by tags relationship count in descending order
+        $products = $products->sortByDesc(function ($product) {
+            return $product->tags->count();
+        });
+
         return $this->success([
             'category' => $category,
             'products' => $products,
