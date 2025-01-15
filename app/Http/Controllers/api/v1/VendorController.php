@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Mail\VendorPasswordMail;
-use App\Models\Discount;
 use App\Models\User;
 use App\Traits\BaseApiResponse;
 use App\Http\Controllers\Controller;
@@ -141,50 +140,31 @@ class VendorController extends Controller
     //userVendorShow
     public function userVendorShow(string $slug, Request $request)
     {
-        // Get the search query parameter and per_page value
+        // Get the search query parameter
         $search = $request->query('search');
-        $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
 
-        // Fetch the vendor with products, apply search if provided
-        $vendor = Vendor::where('slug', $slug)->first();
+        // Fetch the vendor and its products by slug, applying search if available
+        $vendor = Vendor::where('slug', $slug)
+            ->with(['products' => function($query) use ($search) {
+                if ($search) {
+                    $query->where('title', 'LIKE', '%' . $search . '%');
+                }
+                // Include the related category for each product
+                $query->with('category');
+            }])
+            ->first();
 
         // Check if the vendor exists
         if (!$vendor) {
             return $this->error('Vendor not found', 404);
         }
 
-        // Query the vendor's products with relationships and optional search
-        $productsQuery = $vendor->products()->with(['category', 'tags']);
+        $totalProducts = $vendor->products->count();
 
-        if ($search) {
-            $productsQuery->where('title', 'LIKE', '%' . $search . '%');
-        }
+        $vendorData = $vendor->toArray();
+        $vendorData['total_products'] = $totalProducts;
 
-        // Paginate the products
-        $products = $productsQuery->paginate($perPage);
-
-        // Load discounts and calculate final price for each product
-        $discounts = Discount::query()
-            ->where('status', 1)
-            ->where('start_date', '<=', now())
-            ->where('end_date', '>=', now())
-            ->get()
-            ->keyBy('product_id');
-
-        $products->getCollection()->transform(function ($product) use ($discounts) {
-            $product->discount = $discounts->get($product->id);
-            if ($product->discount) {
-                $product->final_price = $product->price - ($product->price * $product->discount->percentage / 100);
-            }
-            return $product;
-        });
-
-        // Include total product count and vendor details in the response
-        return $this->success([
-            'vendor' => $vendor,
-            'total_products' => $products->total(),
-            'products' => $products,
-        ]);
+        return $this->success($vendorData);
     }
 
     public function update(Request $request, $id)
