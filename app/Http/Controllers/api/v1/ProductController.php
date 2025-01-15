@@ -110,6 +110,11 @@ class ProductController extends Controller
             return $product;
         });
 
+        //sorting if products have tags value in products array then sort by tags value in descending order
+        $products = $products->sortByDesc(function ($product) {
+            return $product->tags->count();
+        });
+
         return $this->success($products);
     }
 
