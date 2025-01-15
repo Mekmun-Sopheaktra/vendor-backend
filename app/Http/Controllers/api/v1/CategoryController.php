@@ -109,6 +109,8 @@ class CategoryController extends Controller
 
         $products = $category->products()->paginate($perPage);
 
+        $products->load('tags');
+
         return $this->success([
             'category' => $category,
             'products' => $products,
