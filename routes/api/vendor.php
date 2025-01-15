@@ -38,6 +38,9 @@ Route::prefix('vendor')->middleware(['auth:sanctum', 'api.vendor'])->group(funct
     Route::delete('product/{product}', [VendorProductController::class, 'destroy'])->name('api.vendor.product.delete');
     Route::post('product/update/{product}', [VendorProductController::class, 'update'])->name('api.vendor.product.update');
 
+    //get Tag
+    Route::get('tag', [VendorProductController::class, 'tag'])->name('api.vendor.tag');
+
     //get product options
 
     Route::prefix('compound')->name('api.vendor.compound.')->group(function () {

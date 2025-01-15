@@ -27,7 +27,7 @@ class VendorProductController extends Controller
         $per_page = request()->query('per_page') ?? 10;
         $products = Product::query()
             ->where('vendor_id', $vendor_id)
-            ->with('category')
+            ->with(['category', 'tags'])
             ->where('title', 'like', '%' . $search . '%')
             ->paginate($per_page);
 
@@ -65,7 +65,7 @@ class VendorProductController extends Controller
                 'priority' => 'nullable',
                 'status' => 'nullable',
                 'category_id' => 'nullable',
-                'tags' => 'nullable',
+                'tag_id' => 'nullable',
             ]);
 
             //check if title and slug is unique
@@ -111,8 +111,8 @@ class VendorProductController extends Controller
                 $product->category()->associate($category);
             }
 
-            if ($request->has('tags')) {
-                $product->tags()->attach($request->tags);
+            if ($request->has('tag_id')) {
+                $product->tags()->attach($request->tag_id);
             }
 
             return $this->success($product, 'Product created successfully');
@@ -183,7 +183,7 @@ class VendorProductController extends Controller
                 'priority' => 'nullable',
                 'status' => 'nullable',
                 'category_id' => 'nullable',
-                'tags' => 'nullable',
+                'tag_id' => 'nullable',
             ]);
 
             $vendor_id = auth()->user()?->vendor?->id;
@@ -213,8 +213,8 @@ class VendorProductController extends Controller
             // Update the product with the validated data
             $product->update($validatedData);
 
-            if ($request->has('tags')) {
-                $product->tags()->sync($request->tags);
+            if ($request->has('tag_id')) {
+                $product->tags()->sync($request->tag_id);
             }
 
             return $this->success($product, 'Product updated successfully');
@@ -243,5 +243,12 @@ class VendorProductController extends Controller
             ->get(['id', 'title']);
 
         return $this->success($products, 'Products retrieved successfully');
+    }
+
+    //tag
+    public function tag()
+    {
+        $tags = Tag::all();
+        return $this->success($tags, 'Tags retrieved successfully');
     }
 }

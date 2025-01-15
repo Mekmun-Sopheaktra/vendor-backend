@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\admin\AdminUserController;
 use App\Http\Controllers\admin\AdminVendorController;
 use App\Http\Controllers\admin\AuthController as AdminAuthController;
 use App\Http\Controllers\admin\CategoryController;
@@ -35,6 +36,13 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'api.admin'])->group(functio
         //reject
         Route::post('reject/{vendor}', [AdminVendorController::class, 'reject'])->name('api.admin.vendor.reject');
         //show vendor details
+    });
+
+    //user
+    Route::prefix('user')->group(function () {
+        Route::get('', [AdminUserController::class, 'index'])->name('api.admin.user.index');
+        Route::get('{user}', [AdminUserController::class, 'show'])->name('api.admin.user.show');
+        Route::post('{user}', [AdminUserController::class, 'update'])->name('api.admin.user.update');
     });
 
     Route::prefix('search')->group(function () {
