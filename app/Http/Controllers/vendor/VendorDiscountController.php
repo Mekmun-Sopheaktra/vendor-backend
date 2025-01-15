@@ -125,7 +125,7 @@ class VendorDiscountController extends Controller
                 'discount' => 'required|numeric|between:0,100', // Must be a number between 0 and 100
                 'start_date' => 'required|date', // Must be today or later
                 'end_date' => 'required|date|after:start_date', // Must be after the start date
-                'status' => 'required|boolean',
+                'status' => 'required',
                 'product_id' => 'required|exists:products,id', // Ensure product exists
             ]);
 
@@ -133,11 +133,15 @@ class VendorDiscountController extends Controller
             $validatedData['vendor_id'] = auth()->user()->vendor->id;
             $validatedData['user_id'] = auth()->id();
 
-            // Check if a discount already exists for the same product during the given date range
             $existingDiscount = Discount::where('product_id', $validatedData['product_id'])
-                ->where(function($query) use ($validatedData) {
+                ->where('status', true)
+                ->where(function ($query) use ($validatedData) {
                     $query->whereBetween('start_date', [$validatedData['start_date'], $validatedData['end_date']])
-                        ->orWhereBetween('end_date', [$validatedData['start_date'], $validatedData['end_date']]);
+                        ->orWhereBetween('end_date', [$validatedData['start_date'], $validatedData['end_date']])
+                        ->orWhere(function ($subQuery) use ($validatedData) {
+                            $subQuery->where('start_date', '<=', $validatedData['start_date'])
+                                ->where('end_date', '>=', $validatedData['end_date']);
+                        });
                 })
                 ->exists();
 
@@ -189,7 +193,7 @@ class VendorDiscountController extends Controller
                 'discount' => 'required|numeric|between:0,100', // Must be a number between 0 and 100
                 'start_date' => 'required|date', // Must be today or later
                 'end_date' => 'required|date|after:start_date', // Must be after the start date
-                'status' => 'required|boolean',
+                'status' => 'required',
                 'product_id' => 'required|exists:products,id', // Ensure product exists
             ]);
 
