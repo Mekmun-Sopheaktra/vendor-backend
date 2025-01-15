@@ -92,6 +92,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::get('', [BasketController::class, 'index'])->name('api.cart');
         Route::post('add', [BasketController::class, 'add'])->name('api.cart.add');
         Route::delete('{id}', [BasketController::class, 'delete'])->name('api.cart.delete');
+        //update cart
+        Route::post('update', [BasketController::class, 'update'])->name('api.cart.update');
         //checkout
         Route::post('checkout', [BasketController::class, 'checkout'])->name('api.cart.checkout');
         Route::post('buy', [BasketController::class, 'buy'])->name('api.cart.buy');

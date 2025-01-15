@@ -263,4 +263,21 @@ class BasketController extends Controller
 
         return $this->success(null, 'Success', 'Your purchase was successful');
     }
+
+    //update
+    public function update(Request $request): JsonResponse
+    {
+        $basket = Basket::query()->where('product_id', $request['product'])
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if (!$basket) {
+            return $this->failed(null, 'error', 'Basket item not found.');
+        }
+
+        $basket->count = $request['count'];
+        $basket->save();
+
+        return $this->success(null, 'success', 'Basket item updated successfully.');
+    }
 }
