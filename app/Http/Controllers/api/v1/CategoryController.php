@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api\v1;
 use App\Constants\ProductPriority;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\Discount;
 use App\Models\Product;
 use App\Traits\BaseApiResponse;
 use Illuminate\Http\Request;
@@ -38,14 +39,35 @@ class CategoryController extends Controller
         }
 
         // Query products, apply search if the search term is provided
-        $productsQuery = $category->products();
+        $productsQuery = $category->products()->withCount('tags'); // Add withCount to count related tags
 
         if ($search) {
             $productsQuery->where('title', 'like', '%' . $search . '%');
         }
 
+        // Sort by tags_count in descending order
+        $productsQuery->orderBy('tags_count', 'desc');
+
         $products = $productsQuery->paginate($perPage);
-        $products->load('tags');
+        $products->load(['tags', 'category']);
+
+        $discounts = Discount::query()
+            ->where('status', 1)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->get()
+            ->keyBy('product_id');
+
+        $products->map(function ($product) use ($discounts) {
+            $product->discount = $discounts->get($product->id);
+            // If the product has a discount, calculate the final_price
+            if ($product->discount) {
+                $product->final_price = $product->price - ($product->price * $product->discount->percentage / 100);
+            }
+
+            return $product;
+        });
+
         return $this->success([
             'category' => $category,
             'products' => $products,
