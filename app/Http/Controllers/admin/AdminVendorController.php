@@ -24,6 +24,8 @@ class AdminVendorController extends Controller
             ->when($search, function ($query) use ($search) {
                 return $query->where('name', 'like', "%$search%");
             })
+            ->where('status', false)
+            ->whereNull('user_id')
             ->paginate($perPage);
 
         return $this->success($vendors, 'Vendors retrieved successfully');
