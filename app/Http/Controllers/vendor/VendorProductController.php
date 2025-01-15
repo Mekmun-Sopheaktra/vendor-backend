@@ -134,6 +134,7 @@ class VendorProductController extends Controller
             }
 
             $product = Product::query()
+                ->with(['category', 'tags'])
                 ->where('vendor_id', $vendor_id)
                 ->where('id', $requestt->product)
                 ->first();

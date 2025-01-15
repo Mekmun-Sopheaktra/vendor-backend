@@ -87,7 +87,6 @@ class ProductController extends Controller
         $products = $productsQuery->with(['category', 'tags', 'galleries'])
             ->paginate($perPage, ['*'], 'page', $page);
 
-        // Get active discounts
         $discounts = Discount::query()
             ->where('status', 1)
             ->where('start_date', '<=', now())
@@ -95,23 +94,27 @@ class ProductController extends Controller
             ->get()
             ->keyBy('product_id');
 
-        $products->getCollection()->transform(function ($product) use ($discounts, $isLatest) {
-            if ($discounts->has($product->id)) {
-                $discount = $discounts->get($product->id);
-                $product->final_price = $product->price - ($product->price * $discount->discount / 100);
-                $product->discount = $discount;
-            } else {
-                $product->final_price = $product->price;
-                $product->discount = null;
-            }
+        $sortedProducts = $products->getCollection()
+            ->transform(function ($product) use ($discounts, $isLatest) {
+                if ($discounts->has($product->id)) {
+                    $discount = $discounts->get($product->id);
+                    $product->final_price = $product->price - ($product->price * $discount->discount / 100);
+                    $product->discount = $discount;
+                } else {
+                    $product->final_price = $product->price;
+                    $product->discount = null;
+                }
 
-            $product->latest = $isLatest;
+                $product->latest = $isLatest;
 
-            return $product;
-        });
+                return $product;
+            })
+            ->sortByDesc(function ($product) {
+                return $product->tags->isNotEmpty() ? 1 : 0; // Sort products with tags to the top
+            })
+            ->values(); // Reindex collection to maintain pagination integrity
 
-        //sorting if products have tags value in products array then sort data
-
+        $products->setCollection($sortedProducts);
 
         return $this->success($products);
     }
