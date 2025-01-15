@@ -66,6 +66,7 @@ class VendorProductController extends Controller
                 'status' => 'nullable',
                 'category_id' => 'nullable',
                 'tag_id' => 'nullable',
+                'highlight' => 'nullable',
             ]);
 
             //check if title and slug is unique
@@ -184,6 +185,7 @@ class VendorProductController extends Controller
                 'status' => 'nullable',
                 'category_id' => 'nullable',
                 'tag_id' => 'nullable',
+                'highlight' => 'nullable',
             ]);
 
             $vendor_id = auth()->user()?->vendor?->id;

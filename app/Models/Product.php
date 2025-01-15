@@ -30,6 +30,7 @@ class Product extends Model
         'discount',
         'priority',
         'category_id',
+        'highlight',
         'status',
     ];
 

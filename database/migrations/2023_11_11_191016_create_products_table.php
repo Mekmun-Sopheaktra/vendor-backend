@@ -34,6 +34,7 @@ return new class extends Migration
             $table->string('priority')->nullable(); // Priority for sorting discounts
             $table->boolean('status')->default(true);
             $table->foreignId('category_id')->nullable();
+            $table->boolean('highlight')->default(false);
             $table->timestamps();
         });
     }
