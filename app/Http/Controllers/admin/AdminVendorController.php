@@ -24,6 +24,22 @@ class AdminVendorController extends Controller
             ->when($search, function ($query) use ($search) {
                 return $query->where('name', 'like', "%$search%");
             })
+            ->whereNotNull('user_id')
+            ->paginate($perPage);
+
+        return $this->success($vendors, 'Vendors retrieved successfully');
+    }
+
+    //pending vendors
+    public function pending(Request $request)
+    {
+        $perPage = $request->query('per_page', 10); // Default to 10 items per page
+        $search = $request->query('search', null);
+        //get all vendors that not have user_id
+        $vendors = Vendor::query()
+            ->when($search, function ($query) use ($search) {
+                return $query->where('name', 'like', "%$search%");
+            })
             ->where('status', false)
             ->whereNull('user_id')
             ->paginate($perPage);
