@@ -58,9 +58,13 @@ class AdminUserController extends Controller
     public function update(Request $request, User $user)
     {
         $validatedData = $request->validate([
-            'name' => 'required|max:255|min:3',
-            'email' => 'required|max:255',
+            'status' => 'required',
         ]);
+
+        //prevent update if own user is trying to update their status to inactive
+        if ($user->id === auth()->id() && $validatedData['status'] === 0) {
+            return $this->failed(null,'You cannot deactivate your own account', 403);
+        }
 
         $user->update($validatedData);
 

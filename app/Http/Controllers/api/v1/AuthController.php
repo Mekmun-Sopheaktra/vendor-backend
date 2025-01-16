@@ -20,7 +20,12 @@ class AuthController extends Controller
     public function Login(LoginRequest $request): JsonResponse
     {
         try {
-            $user = User::query()->select('id', 'email', 'password')->where('email', $request->input('email'))->first();
+            $user = User::query()
+                ->select('id', 'email', 'password')
+                //status 1 is active user
+                ->where('status', 1)
+                ->where('email', $request->input('email'))
+                ->first();
 
             if (! $user || ! Hash::check($request->input('password'), $user->password)) {
                 return $this->failed(null, 'Invalid', 'Invalid credentials', 401);

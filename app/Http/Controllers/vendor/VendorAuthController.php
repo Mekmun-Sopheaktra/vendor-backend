@@ -19,6 +19,8 @@ class VendorAuthController extends Controller
     {
         try {
             $user = User::query()->select('id', 'email', 'password')
+                //status 1 is active user
+                ->where('status', 1)
                 ->where('email', $request->input('email'))
                 ->where('is_vendor', true)
                 ->first();

@@ -27,6 +27,8 @@ return new class extends Migration
             $table->string('avatar')->nullable();
             //image
             $table->string('image')->nullable();
+            //status
+            $table->boolean('status')->default(1);
             $table->rememberToken();
             $table->timestamps();
         });
