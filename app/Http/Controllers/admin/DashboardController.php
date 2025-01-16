@@ -20,7 +20,7 @@ class DashboardController extends Controller
     public function index()
     {
         // Total users
-        $totalVendors = Vendor::query()->where('status', VendorStatusConstants::ACTIVE)->count();
+        $totalVendors = Vendor::query()->where('status', 1)->count();
 
         // Total orders from Model Order
         $totalOrders = Order::count();
