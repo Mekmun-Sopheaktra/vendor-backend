@@ -49,7 +49,6 @@ class CategoryController extends Controller
         // Validate the incoming request
         $request->validate([
             'name' => 'required|string|max:255|unique:categories',
-            'slug' => 'required|string|max:255|unique:categories',
             'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Validate image type and size
             'description' => 'nullable|string',
             'parent' => 'nullable|string',
