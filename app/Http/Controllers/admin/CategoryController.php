@@ -16,7 +16,7 @@ class CategoryController extends Controller
 
     public function index(Request $request)
     {
-        $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 15));
+        $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 5));
         $search = $request->query('search');
 
         $categories = Category::query()
@@ -28,7 +28,7 @@ class CategoryController extends Controller
     // Show category and its products
     public function show($id, Request $request)
     {
-        $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 15));
+        $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 5));
 
         $category = Category::find($id);
         if (!$category) {
