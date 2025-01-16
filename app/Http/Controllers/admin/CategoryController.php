@@ -49,6 +49,7 @@ class CategoryController extends Controller
         // Validate the incoming request
         $request->validate([
             'name' => 'required|string|max:255|unique:categories',
+            'slug' => 'required',
             'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Validate image type and size
             'description' => 'nullable|string',
             'parent' => 'nullable|string',
@@ -68,6 +69,7 @@ class CategoryController extends Controller
             'name' => $request->input('name'),
             'icon' => $fullIconUrl, // Save the full URL path in the database
             'description' => $request->input('description'),
+            'slug' => $request->input('slug'),
             'parent' => $request->input('parent'),
         ]);
 
