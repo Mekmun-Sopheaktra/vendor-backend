@@ -203,6 +203,13 @@ class VendorDiscountController extends Controller
             //get discount with product
             $discount = Discount::with('product')->find($discount->id);
 
+            //if status is 0 update product discount to 0
+            if ($validatedData['status'] == 0) {
+                $product = Product::find($validatedData['product_id']);
+                $product->discount = 0;
+                $product->save();
+            }
+
             //also update in products table
             $product = Product::find($validatedData['product_id']);
             $product->discount = $validatedData['discount'];
