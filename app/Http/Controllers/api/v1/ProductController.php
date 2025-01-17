@@ -131,7 +131,6 @@ class ProductController extends Controller
 
         // Retrieve related products
         $relatedProducts = Product::where('category_id', $product->category_id)
-            ->where('discount', '>', 0)
             ->where('status', 1)
             ->where('vendor_id', $product->vendor_id)
             ->where('id', '!=', $id) // Exclude the current product
