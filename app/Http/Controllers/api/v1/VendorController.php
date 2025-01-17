@@ -26,6 +26,12 @@ class VendorController extends Controller
             ->where('status', true)
             ->paginate($perPage);
 
+        //logo secure_asset('storage/'.$vendor->logo) ?? config('image.avatar_url')
+        $vendors->getCollection()->transform(function ($vendor) {
+            $vendor->logo = secure_asset('storage/'.$vendor->logo) ?? config('image.avatar_url');
+            return $vendor;
+        });
+
         return $this->success($vendors, 'Vendors retrieved successfully');
     }
 
@@ -157,6 +163,9 @@ class VendorController extends Controller
         if (!$vendor) {
             return $this->error('Vendor not found', 404);
         }
+
+        //logo secure_asset('storage/'.$vendor->logo) ?? config('image.avatar_url')
+        $vendor->logo = secure_asset('storage/'.$vendor->logo) ?? config('image.avatar_url');
 
         $totalProducts = $vendor->products->count();
 

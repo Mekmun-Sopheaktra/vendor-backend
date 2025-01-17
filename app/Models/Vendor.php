@@ -50,10 +50,5 @@ class Vendor extends Model
     }
 
     //logo
-    public function getLogoAttribute($value)
-    {
-        return secure_asset('storage/'.$value);
-    }
-
     //
 }
