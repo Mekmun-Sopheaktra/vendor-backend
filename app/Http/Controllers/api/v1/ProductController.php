@@ -394,7 +394,7 @@ class ProductController extends Controller
         // Initialize query
         $query = Product::query()
             ->where('status', true)
-            ->with(['discount'])
+            ->with(['discounts'])
             ->where(function ($query) {
                 $query->where('discount', '>', 0) // Products with discounts
                 ->orWhere('is_compound_product', true); // Or compound products

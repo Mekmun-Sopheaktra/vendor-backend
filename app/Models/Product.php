@@ -89,7 +89,7 @@ class Product extends Model
     {
         return asset('storage/' . $value);
     }
-    public function discount()
+    public function discounts()
     {
         return $this->hasMany(Discount::class);
     }
