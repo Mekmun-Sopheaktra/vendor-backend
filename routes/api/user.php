@@ -27,6 +27,9 @@ Route::prefix('v1')->group(function () {
 
     Route::get('email/verify/{id}', [WebAuthController::class, 'verify'])->name('api.verification.verify'); // Make sure to keep this as your route name
     Route::get('email/resend', [WebAuthController::class, 'resend'])->name('verification.resend');
+
+    //forgot password
+    Route::post('reset-password', [AuthController::class, 'resetPassword'])->name('api.password.email');
 });
 //product routes
 Route::prefix('v1/product')->group(function () {
@@ -72,6 +75,10 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('permission', [AuthController::class, 'Permission']);
     Route::get('profile', [ProfileController::class, 'index'])->name('api.profile');
     Route::post('profile', [ProfileController::class, 'update'])->name('api.update.profile');
+    //change password
+    Route::post('update-password', [ProfileController::class, 'changePassword'])->name('api.change.password');
+    //logout
+    Route::post('logout', [AuthController::class, 'Logout'])->name('api.logout');
 
     //category routes
     Route::prefix('wishlist')->group(function () {

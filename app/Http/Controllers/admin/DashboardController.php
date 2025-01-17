@@ -60,4 +60,26 @@ class DashboardController extends Controller
             'top_products' => $stats
         ]);
     }
+
+    //Subscription Billing
+    public function subscription()
+    {
+        //check if revenue already exists for this month then return error
+        $revenue = Revenue::query()->whereMonth('date', now())->first();
+        if ($revenue) {
+            return $this->failed(null,'Revenue already exists for this month');
+        }
+        //total revenue = total vendor active * monthly_subscription_fee constant and save to revenue table with date now
+        $totalVendors = Vendor::query()->where('status', VendorStatusConstants::ACTIVE)->count();
+        $monthlySubscriptionFee = 15;
+        $totalRevenue = $totalVendors * $monthlySubscriptionFee;
+
+        $revenue = new Revenue();
+        $revenue->date = now();
+        $revenue->revenue = $totalRevenue;
+        $revenue->monthly_subscription_fee = $monthlySubscriptionFee;
+        $revenue->save();
+
+        return $this->success($revenue);
+    }
 }

@@ -26,6 +26,8 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'api.admin'])->group(functio
     Route::get('profile', [ProfileController::class, 'index'])->name('api.admin.profile');
     Route::post('profile', [ProfileController::class, 'update'])->name('api.admin.update.profile');
     Route::get('dashboard', [DashboardController::class, 'index'])->name('api.admin.home');
+    //Subscription Billing post for subscription billing
+    Route::post('dashboard/subscription', [DashboardController::class, 'subscription'])->name('api.admin.subscription');
 
     //list of all vendors
     Route::prefix('vendor')->group(function () {

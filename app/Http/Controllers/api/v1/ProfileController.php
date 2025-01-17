@@ -9,6 +9,8 @@ use App\Http\Resources\Profile\AddressResource;
 use App\Notifications\ProfileUpdated;
 use App\Traits\BaseApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
@@ -61,5 +63,35 @@ class ProfileController extends Controller
         $address = auth()->user()->address()->create($request->validated());
 
         return $this->success(new AddressResource($address));
+    }
+
+    //changePassword
+    public function changePassword(Request $request)
+    {
+        // Validate request: old password, new password, and confirmation
+        $request->validate([
+            'old_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        // Get authenticated user
+        $user = auth()->user();
+
+        // Check if old password matches
+        if (!Hash::check($request->old_password, $user->password)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Old password is incorrect'
+            ], 400);
+        }
+
+        // Update password
+        $user->password = $request->password;
+        $user->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Password changed successfully'
+        ]);
     }
 }

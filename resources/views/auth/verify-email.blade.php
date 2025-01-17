@@ -90,7 +90,6 @@
 <div class="email-container">
     <!-- Header with background image -->
     <div class="header">
-        <img src="https://shop.mekmunsopheaktra.com/assets/imgs/logo/logo.png" alt="Logo">
         <h1>Welcome to Our Community!</h1>
     </div>
 

@@ -6,9 +6,9 @@ class VendorStatusConstants
 {
     public const PENDING = 'pending';
 
-    public const ACTIVE = 'active';
+    public const ACTIVE = 1;
 
-    public const INACTIVE = 'inactive';
+    public const INACTIVE = 0;
 
     public const CANCEL = 'cancel';
 }
