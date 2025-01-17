@@ -208,6 +208,7 @@ class VendorDiscountController extends Controller
                 $product = Product::find($validatedData['product_id']);
                 $product->discount = 0;
                 $product->save();
+                return $this->success($discount, 'Discount', 'Discount updated successfully.');
             }
 
             //also update in products table
