@@ -52,7 +52,7 @@ class Vendor extends Model
     //logo
     public function getLogoAttribute($value)
     {
-        return $value ? secure_asset('storage/'.$value) : config('image.avatar_url');
+        return secure_asset('storage/'.$value);
     }
 
     //
