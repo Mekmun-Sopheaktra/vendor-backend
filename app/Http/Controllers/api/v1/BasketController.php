@@ -21,11 +21,19 @@ class BasketController extends Controller
 {
     use BaseApiResponse;
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
+        //vendor_id
+        $vendor_id = $request->query('vendor_id'); // No need for null default
         $delivery_fee = 2.5;
         $baskets = auth()->user()->baskets()
             ->whereIn('status', ['created', 'pending_payment'])
+            //$vendor_id
+            ->when($vendor_id !== null, function ($query) use ($vendor_id) {
+                return $query->whereHas('product', function ($query) use ($vendor_id) {
+                    $query->where('vendor_id', $vendor_id);
+                });
+            })
             ->with('product')
             ->get();
 
