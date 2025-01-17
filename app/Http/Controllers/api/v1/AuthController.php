@@ -27,6 +27,9 @@ class AuthController extends Controller
                 ->select('id', 'email', 'password')
                 //status 1 is active user
                 ->where('status', 1)
+                //is is_superuser 1 and is_vendor 1 is do not login
+                ->where('is_superuser', 0)
+                ->where('is_vendor', 0)
                 ->where('email', $request->input('email'))
                 ->first();
 

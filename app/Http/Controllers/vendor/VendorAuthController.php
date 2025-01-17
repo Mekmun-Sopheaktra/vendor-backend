@@ -22,7 +22,7 @@ class VendorAuthController extends Controller
                 //status 1 is active user
                 ->where('status', 1)
                 ->where('email', $request->input('email'))
-                ->where('is_vendor', true)
+                ->where('is_vendor', 1)
                 ->first();
 
             if (!$user || !Hash::check($request->input('password'), $user->password)) {
