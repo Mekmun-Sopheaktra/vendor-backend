@@ -123,16 +123,17 @@ class VendorDiscountController extends Controller
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
                 'discount' => 'required|numeric|between:0,100', // Must be a number between 0 and 100
-                'start_date' => 'required|date', // Must be today or later
+                'start_date' => 'required|date|after_or_equal:today', // Must be today or later
                 'end_date' => 'required|date|after:start_date', // Must be after the start date
-                'status' => 'required',
+                'status' => 'required|boolean', // Ensure status is boolean
                 'product_id' => 'required|exists:products,id', // Ensure product exists
             ]);
 
-            // Add vendor and user IDs to the validated data
+            // Add vendor and user IDs
             $validatedData['vendor_id'] = auth()->user()->vendor->id;
             $validatedData['user_id'] = auth()->id();
 
+            // Check for overlapping discounts for the same product
             $existingDiscount = Discount::where('product_id', $validatedData['product_id'])
                 ->where('status', true)
                 ->where(function ($query) use ($validatedData) {
@@ -151,12 +152,21 @@ class VendorDiscountController extends Controller
 
             // Create the discount
             $discount = Discount::create($validatedData);
-            $product = Product::find($validatedData['product_id']);
-            $product->discount = $validatedData['discount'];
+
+            // Fetch product
+            $product = Product::findOrFail($validatedData['product_id']);
+
+            // If discount starts in the future, set product discount to 0
+            if (now()->lt($validatedData['start_date'])) {
+                $product->discount = 0;
+            } else {
+                $product->discount = $validatedData['status'] ? $validatedData['discount'] : 0;
+            }
+
             $product->save();
 
             // Get discount with product
-            $discount = Discount::with('product')->find($discount->id);
+            $discount->load('product');
 
             return $this->success($discount, 'Discount', 'Discount created successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {

@@ -30,14 +30,37 @@ class CheckDiscountStatus extends Command
     public function handle()
     {
         try {
-            $discounts = Discount::where('end_date', '<', now())->get();
+            $discounts = Discount::all();
 
             foreach ($discounts as $discount) {
-                $discount->status = false;
-                $discount->save();
-
                 $product = Product::find($discount->product_id);
-                $product->discount = 0;
+
+                if (!$product) {
+                    continue;
+                }
+
+                $now = now();
+
+                if ($now->lt($discount->start_date)) {
+                    // Before start date, disable discount
+                    $discount->status = false;
+                    $discount->save();
+
+                    $product->discount = 0;
+                } elseif ($now->between($discount->start_date, $discount->end_date)) {
+                    // Between start and end date, apply discount
+                    $discount->status = true;
+                    $discount->save();
+
+                    $product->discount = $discount->discount;
+                } else {
+                    // After end date, disable discount
+                    $discount->status = false;
+                    $discount->save();
+
+                    $product->discount = 0;
+                }
+
                 $product->save();
             }
 
