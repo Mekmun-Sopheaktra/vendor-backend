@@ -19,18 +19,17 @@ class VendorProfileController extends Controller
         $user = auth()->user();
         //get vendor data
         $vendor = $user->vendor;
-        logger($vendor);
         return $this->success([
             'email' =>$user->email,
             'mobile' => $user->mobile,
             'name' => $user->name,
-            'image' => secure_asset('storage/'.auth()->user()->image) ?? config('image.avatar_url'),
+            'image' => $user->image,
             'age' => $user->age ?? 0,
             'vendor_name' => $vendor->name,
             'vendor_slug' => $vendor->slug,
             'vendor_address' => $vendor->address,
             'vendor_description' => $vendor->description,
-            'vendor_logo' => secure_asset('storage/'.$vendor->logo) ?? config('image.avatar_url'),
+            'vendor_logo' => $vendor->logo,
             'vendor_status' => $vendor->status,
             'vendor_paypal_client_id' => $vendor->paypal_client_id,
         ]);
@@ -72,13 +71,13 @@ class VendorProfileController extends Controller
             'email' =>$user->email,
             'name' => $user->name,
             'mobile' => $user->mobile,
-            'image' => asset('storage/'.$user->image) ?? config('image.avatar_url'),
+            'image' => $user->image,
             'age' => $user->age,
             'vendor_name' => $vendor->name,
             'vendor_slug' => $vendor->slug,
             'vendor_address' => $vendor->address,
             'vendor_description' => $vendor->description,
-            'vendor_logo' => secure_asset('storage/'.$vendor->logo) ?? config('image.avatar_url'),
+            'vendor_logo' => $vendor->logo,
             'vendor_status' => $vendor->status,
             'vendor_paypal_client_id' => $vendor->paypal_client_id,
         ]);

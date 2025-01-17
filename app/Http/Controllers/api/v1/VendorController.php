@@ -20,7 +20,6 @@ class VendorController extends Controller
         $perPage = $request->query('per_page', 10); // Default to 10 items per page
         //search vendors
         $search = $request->query('search');
-        logger($search);
         $vendors = Vendor::query()
             ->where('name', 'like', "%$search%")
             //status = active

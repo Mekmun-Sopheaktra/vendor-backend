@@ -48,4 +48,12 @@ class Vendor extends Model
     {
         return $this->hasMany(Basket::class);
     }
+
+    //logo
+    public function getLogoAttribute($value)
+    {
+        return $value ? secure_asset('storage/'.$value) : config('image.avatar_url');
+    }
+
+    //
 }
