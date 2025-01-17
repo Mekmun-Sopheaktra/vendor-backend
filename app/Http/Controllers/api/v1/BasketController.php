@@ -175,6 +175,7 @@ class BasketController extends Controller
                     ->from('products')
                     ->where('vendor_id', $vendor_id);
             })
+            ->where('status', 'created')
             ->with('product') // Load product relationship
             ->get();
 
