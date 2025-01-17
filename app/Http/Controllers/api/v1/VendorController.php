@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\api\v1;
 
 use App\Mail\VendorPasswordMail;
+use App\Models\Discount;
 use App\Models\User;
 use App\Traits\BaseApiResponse;
 use App\Http\Controllers\Controller;
@@ -150,7 +151,7 @@ class VendorController extends Controller
 
         // Fetch the vendor and its products by slug, applying search if available
         $vendor = Vendor::where('slug', $slug)
-            ->with(['products' => function($query) use ($search) {
+            ->with(['products' => function ($query) use ($search) {
                 if ($search) {
                     $query->where('title', 'LIKE', '%' . $search . '%');
                 }
@@ -164,8 +165,29 @@ class VendorController extends Controller
             return $this->error('Vendor not found', 404);
         }
 
-        //logo secure_asset('storage/'.$vendor->logo) ?? config('image.avatar_url')
-        $vendor->logo = secure_asset('storage/'.$vendor->logo) ?? config('image.avatar_url');
+        // Fetch active discounts for the vendor's products
+        $discounts = Discount::query()
+            ->where('status', 1)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->whereIn('product_id', $vendor->products->pluck('id'))
+            ->get()
+            ->keyBy('product_id');
+
+        // Calculate final_price for each product
+        $vendor->products->each(function ($product) use ($discounts) {
+            if ($discounts->has($product->id)) {
+                $discount = $discounts->get($product->id);
+                $product->final_price = $product->price - ($product->price * $discount->discount / 100);
+                $product->discount = $discount;
+            } else {
+                $product->final_price = $product->price;
+                $product->discount = null;
+            }
+        });
+
+        // Set logo URL
+        $vendor->logo = secure_asset('storage/' . $vendor->logo) ?? config('image.avatar_url');
 
         $totalProducts = $vendor->products->count();
 
