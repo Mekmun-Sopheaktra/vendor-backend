@@ -122,7 +122,7 @@ class ProductController extends Controller
     public function show($id): JsonResponse
     {
         // Find the product by ID, including related categories, tags, and galleries
-        $product = Product::with(['category', 'tags', 'galleries'])->where('status', true)->find($id);
+        $product = Product::with(['category', 'tags', 'galleries'])->where('status', 1)->find($id);
 
         // Return an error if the product is not found
         if (!$product) {
@@ -132,7 +132,7 @@ class ProductController extends Controller
         // Retrieve related products
         $relatedProducts = Product::where('category_id', $product->category_id)
             ->where('discount', '>', 0)
-            ->where('status', true)
+            ->where('status', 1)
             ->where('vendor_id', $product->vendor_id)
             ->where('id', '!=', $id) // Exclude the current product
             ->limit(5) // Limit the number of related products
