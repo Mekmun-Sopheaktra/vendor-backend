@@ -64,6 +64,10 @@ class CategoryController extends Controller
             if ($product->discount) {
                 $product->final_price = $product->price - ($product->price * $product->discount->percentage / 100);
             }
+            //discount->discount
+            if ($product->discount) {
+                $product->discount = $product->discount->discount;
+            }
 
             return $product;
         });
