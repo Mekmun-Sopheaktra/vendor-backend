@@ -99,7 +99,7 @@ class ProductController extends Controller
                 if ($discounts->has($product->id)) {
                     $discount = $discounts->get($product->id);
                     $product->final_price = $product->price - ($product->price * $discount->discount / 100);
-                    $product->discount = $discount;
+                    $product->discount = $discount->discount ?? null;
                 } else {
                     $product->final_price = $product->price;
                     $product->discount = null;
