@@ -59,7 +59,7 @@ class CategoryController extends Controller
             ->keyBy('product_id');
 
         $products->map(function ($product) use ($discounts) {
-            $product->discount = $discounts->get($product->id);
+            $product->discount = $discounts->get($product->id)->discount ?? null;
             // If the product has a discount, calculate the final_price
             if ($product->discount) {
                 $product->final_price = $product->price - ($product->price * $product->discount->percentage / 100);
