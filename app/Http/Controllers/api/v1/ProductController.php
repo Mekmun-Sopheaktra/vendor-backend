@@ -84,7 +84,7 @@ class ProductController extends Controller
         $perPage = $request->query('per_page', env('PAGINATION_PER_PAGE', 10));
         $page = $request->query('page', 1);
 
-        $products = $productsQuery->with(['category', 'tags', 'galleries'])
+        $products = $productsQuery->with(['category', 'tags', 'galleries','discounts'])
             ->paginate($perPage, ['*'], 'page', $page);
 
         $discounts = Discount::query()
@@ -290,8 +290,12 @@ class ProductController extends Controller
     public function latestProducts(Request $request)
     {
         $sortOrder = $request->query('order', 'desc'); // Default to descending
-        $products = Product::orderBy('created_at', $sortOrder)->where('status', true)->limit(4)->get();
+        $products = Product::query()
+            ->orderBy('created_at', $sortOrder)
+            ->where('status', 1)
+            ->limit(4)->get();
 
+        logger($products);
         return $this->success($products);
     }
 
