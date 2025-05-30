@@ -2,6 +2,8 @@
 
 UNAMEOUT="$(uname -s)"
 
+# sudo chmod -R 777 storage
+
 # Verify operating system is supported...
 case "${UNAMEOUT}" in
     Linux*)             MACHINE=linux;;
